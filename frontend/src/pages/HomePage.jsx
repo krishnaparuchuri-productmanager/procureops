@@ -54,11 +54,25 @@ export default function HomePage() {
   return (
     <div>
       <h1 className="text-4xl mb-3">ProcureOps</h1>
-      <p className="text-ink-muted text-base mb-8 max-w-2xl">
+      <p className="text-ink-muted text-base mb-6 max-w-2xl">
         A Router classifies incoming procurement requests and hands off to six specialists. Every
         proposal that touches money leaving the company is human-gated by design — an agent can never
         approve its own recommendation.
       </p>
+
+      <div className="border border-rule p-4 mb-8 max-w-2xl">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-accent mb-2">Where this sits — S2P, not just S2C or P2P</p>
+        <p className="text-sm text-ink-muted">
+          Maker-checker, the audit log, and policy-snapshot-at-decision-time apply identically whether a
+          specialist sits on the sourcing side (Sourcing Strategy, Sourcing / Quote Comparison,
+          Negotiation Brief, Contract Renewal) or the P2P side (Requisition Intake, Invoice Verification,
+          Inventory Management) — one governance spine across the full lifecycle, not two separate
+          rulebooks. What's not built yet: a shared contract object that threads a sourcing award into
+          what Requisition Intake and Invoice Verification actually check against — the piece that turns
+          "savings identified in sourcing" into "savings verified at invoice." That closed loop is the
+          natural next milestone, not a claim this build makes today.
+        </p>
+      </div>
 
       <NotificationsPanel />
 

@@ -42,9 +42,9 @@ export default function NegotiationBriefPage() {
       <p className="text-ink-muted text-sm mb-6 max-w-3xl">
         Strategy prep for a human negotiator — not a decision, nothing to approve. Grounded in
         BATNA, a reasoned ZOPA estimate, and an integrative ("win-win") trade menu across non-price
-        issues, using this vendor's real performance history and standard contract terms. Deliberately
-        does not show a numeric win-probability — that needs real negotiation-outcome history to be
-        honest, not a guess.
+        issues, using this vendor's real performance history and standard contract terms. The historical
+        odds shown below are real computed statistics from past negotiation outcomes — kept separate
+        from the agent's own reasoning above, which never states a percentage of its own.
       </p>
 
       <div className="grid gap-4 max-w-2xl mb-5">
@@ -74,7 +74,7 @@ export default function NegotiationBriefPage() {
 
       {result && (
         <section className="mt-8 border border-rule p-5">
-          <NegotiationBriefCard brief={result.brief} sources={result.sources} agentId={result.agent_id} usage={result.usage} />
+          <NegotiationBriefCard brief={result.brief} sources={result.sources} agentId={result.agent_id} usage={result.usage} odds={result.odds} />
         </section>
       )}
     </div>

@@ -4,7 +4,11 @@ import SourceCitations from './SourceCitations.jsx'
 
 const PRIORITY_COLOR = { High: 'text-accent', Medium: 'text-ink-soft', Low: 'text-ink-muted' }
 
-export default function NegotiationBriefCard({ brief, sources, agentId, usage }) {
+function askTypeLabel(askType) {
+  return askType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export default function NegotiationBriefCard({ brief, sources, agentId, usage, odds }) {
   return (
     <div>
       <div className="flex items-start justify-between gap-4 mb-5">
@@ -50,6 +54,43 @@ export default function NegotiationBriefCard({ brief, sources, agentId, usage })
                 <p className="text-xs text-ink-muted">{t.trade_idea}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {odds?.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">
+            Historical odds — real, computed
+          </p>
+          <p className="text-xs text-ink-muted mb-2 normal-case">
+            From actual past negotiation outcomes, not the agent's estimate. "This vendor" is this
+            vendor's own history; "market" is every vendor. A low sample size is flagged, not hidden.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-rule text-left font-mono text-[10px] uppercase tracking-wide text-ink-muted">
+                  <th className="py-1.5 pr-3">Ask type</th>
+                  <th className="py-1.5 pr-3">This vendor</th>
+                  <th className="py-1.5">Market</th>
+                </tr>
+              </thead>
+              <tbody>
+                {odds.map((o) => (
+                  <tr key={o.ask_type} className="border-b border-rule last:border-0">
+                    <td className="py-1.5 pr-3">{askTypeLabel(o.ask_type)}</td>
+                    <td className="py-1.5 pr-3 font-mono">
+                      {o.vendor_accept_rate_pct}%
+                      <span className="text-ink-muted"> (n={o.vendor_sample_size}{o.vendor_low_confidence ? ', thin sample' : ''})</span>
+                    </td>
+                    <td className="py-1.5 font-mono text-ink-muted">
+                      {o.market_accept_rate_pct}% (n={o.market_sample_size})
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

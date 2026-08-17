@@ -23,9 +23,11 @@ from typing import Optional
 try:
     from agents.negotiation_brief import assess_negotiation_brief
     from agents.common import AGENT_IDS
+    from agents.odds import compute_odds
 except ImportError:
     from backend.agents.negotiation_brief import assess_negotiation_brief
     from backend.agents.common import AGENT_IDS
+    from backend.agents.odds import compute_odds
 
 router = APIRouter()
 
@@ -50,6 +52,8 @@ def propose_negotiation_brief(body: NegotiationBriefRequest):
     brief, chunks, usage = assess_negotiation_brief(
         body.vendor_id, body.category, body.context_description, body.current_annual_value_usd,
     )
+    # Real computed statistics, not part of the LLM's output — see agents/odds.py.
+    odds = compute_odds(body.vendor_id)
 
     conn = sqlite3.connect(_DB_PATH)
     try:
@@ -64,6 +68,7 @@ def propose_negotiation_brief(body: NegotiationBriefRequest):
                  json.dumps(brief), usage.get("latency_ms"),
                  usage.get("input_tokens"), usage.get("output_tokens"), None),
             )
-        return {"trace_id": trace_id, "brief": brief, "sources": chunks, "usage": usage, "agent_id": agent_id}
+        return {"trace_id": trace_id, "brief": brief, "sources": chunks, "usage": usage,
+                "agent_id": agent_id, "odds": odds}
     finally:
         conn.close()

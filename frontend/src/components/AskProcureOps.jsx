@@ -6,11 +6,14 @@ const EXAMPLE = "We got 5 replacement laptops in, but the invoice says $1,265 ea
 
 const TASK_TYPE_LABELS = {
   requisition: 'Requisition Intake',
+  sourcing_strategy: 'Sourcing Strategy',
   sourcing: 'Sourcing / Quote Comparison',
   invoice: 'Invoice Verification',
   inventory: 'Inventory Management',
 }
-const TASK_TYPE_MODEL = { requisition: 'Haiku', sourcing: 'Sonnet', invoice: 'Sonnet', inventory: 'Haiku' }
+const TASK_TYPE_MODEL = {
+  requisition: 'Haiku', sourcing_strategy: 'Sonnet', sourcing: 'Sonnet', invoice: 'Sonnet', inventory: 'Haiku',
+}
 
 // STATE MACHINE: idle -> routing -> (routed | ambiguous) -> [requisition only] processing -> done
 export default function AskProcureOps({ vendors, onHandoff }) {

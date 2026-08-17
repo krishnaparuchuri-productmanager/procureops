@@ -33,6 +33,8 @@ export const api = {
     request('/decisions/requisition', { method: 'POST', body: JSON.stringify(body) }),
   proposeSourcing: (body) =>
     request('/decisions/sourcing', { method: 'POST', body: JSON.stringify(body) }),
+  proposeSourcingStrategy: (body) =>
+    request('/decisions/sourcing-strategy', { method: 'POST', body: JSON.stringify(body) }),
   proposeInvoice: (body) =>
     request('/decisions/invoice', { method: 'POST', body: JSON.stringify(body) }),
   proposeInventory: (body) =>

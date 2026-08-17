@@ -22,6 +22,7 @@ and Reorder Action may auto-clear based on the specialist's own action field.
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import sys
 import uuid
@@ -35,6 +36,7 @@ from pydantic import BaseModel
 try:
     from agents.requisition_intake import assess_requisition
     from agents.sourcing import assess_sourcing
+    from agents.sourcing_strategy import assess_sourcing_strategy
     from agents.invoice_verification import assess_invoice
     from agents.inventory_management import assess_inventory
     from agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
@@ -44,14 +46,13 @@ try:
 except ImportError:
     from backend.agents.requisition_intake import assess_requisition
     from backend.agents.sourcing import assess_sourcing
+    from backend.agents.sourcing_strategy import assess_sourcing_strategy
     from backend.agents.invoice_verification import assess_invoice
     from backend.agents.inventory_management import assess_inventory
     from backend.agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from backend.observability.audit import write_audit
     from backend.routes.policy import get_active_version, _connect as _policy_connect
     from backend.retrieval import get_chunk_by_id
-    from backend.observability.audit import write_audit
-    from backend.routes.policy import get_active_version, _connect as _policy_connect
 
 router = APIRouter()
 
@@ -151,6 +152,12 @@ class SourcingRequest(BaseModel):
     quotes: list[dict]
 
 
+class SourcingStrategyRequest(BaseModel):
+    category: str
+    spend_description: str
+    budget_hint_usd: Optional[float] = None
+
+
 class InvoiceRequest(BaseModel):
     match_id: str
     po: dict
@@ -211,6 +218,37 @@ def propose_sourcing(body: SourcingRequest):
             )
         return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
                 "usage": usage, "agent_id": agent_id}
+    finally:
+        conn.close()
+
+
+@router.post("/decisions/sourcing-strategy", status_code=201)
+def propose_sourcing_strategy(body: SourcingStrategyRequest):
+    agent_id = AGENT_IDS["sourcing_strategy"]
+    conn = _connect()
+    try:
+        # Candidate vendors come from a direct, deterministic DB query — not
+        # RAG top-k — so the shortlist the agent reasons over is the complete
+        # set of approved vendors in this category, never a lossy slice.
+        candidates = [dict(r) for r in conn.execute(
+            "SELECT vendor_id, name FROM vendors WHERE category=? AND approval_status='approved' "
+            "ORDER BY vendor_id", (body.category,),
+        ).fetchall()]
+
+        assessment, chunks, usage = assess_sourcing_strategy(
+            body.category, body.spend_description, candidates, body.budget_hint_usd,
+        )
+
+        category_slug = re.sub(r"[^A-Za-z0-9]+", "-", body.category).strip("-")[:20]
+        entity_ref = f"STRAT-{category_slug}-{uuid.uuid4().hex[:8]}"
+        with conn:
+            trace_id = _log_trace(conn, agent_id, body.spend_description, chunks, assessment, usage)
+            decision_id = _create_decision(
+                conn, "sourcing_strategy", entity_ref, agent_id, assessment,
+                assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), False, trace_id,
+            )
+        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id, "candidate_count": len(candidates)}
     finally:
         conn.close()
 

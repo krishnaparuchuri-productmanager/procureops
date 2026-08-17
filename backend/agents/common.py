@@ -35,13 +35,27 @@ AGENT_IDS = {
     "router":              "procureops-router",
     "requisition_intake":  "procureops-requisition-intake",
     "sourcing":            "procureops-sourcing",
+    "sourcing_strategy":   "procureops-sourcing-strategy",
     "invoice_verification": "procureops-invoice-verification",
     "inventory_management": "procureops-inventory-management",
 }
 
+# All valid decision_reviews.decision_type values — validated here (Pydantic
+# Literal at the API layer) rather than a DB CHECK constraint, since new
+# specialists keep adding types and a CHECK would need a schema migration
+# every time. See db/init_db.py::migrate_db for the one-time cleanup of the
+# CHECK this replaced.
+DECISION_TYPES = [
+    "requisition_intake", "vendor_selection", "invoice_verdict",
+    "reorder_action", "sourcing_strategy",
+]
+
 # Decision types that are ALWAYS human-gated — no auto_cleared path exists
-# anywhere in the code for these two, regardless of confidence or dollar value.
-PROD_CRITICAL_DECISION_TYPES = {"vendor_selection", "invoice_verdict"}
+# anywhere in the code for these, regardless of confidence or dollar value.
+# sourcing_strategy joins vendor_selection/invoice_verdict here: it doesn't
+# commit a specific vendor or dollar amount, but it directly shapes a real
+# RFP a human will run, so the same no-autonomous-approval rule applies.
+PROD_CRITICAL_DECISION_TYPES = {"vendor_selection", "invoice_verdict", "sourcing_strategy"}
 
 
 def format_chunks(chunks: list[dict], label: str) -> str:

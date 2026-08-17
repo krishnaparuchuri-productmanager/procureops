@@ -7,13 +7,14 @@ matching specialist, mirroring MediAssist's Router + Specialists pattern
 is a cheap, low-ambiguity task; the reasoning happens downstream in the
 specialist the router delegates to.
 
-    task_type              -> specialist agent id                  model
+    task_type                 -> specialist agent id                  model
     ────────────────────────────────────────────────────────────────────────
-    "requisition"          -> procureops-requisition-intake        haiku-4-5
-    "sourcing" / "quote"   -> procureops-sourcing                  sonnet-4-6
-    "invoice"              -> procureops-invoice-verification      sonnet-4-6
-    "inventory" / "reorder"-> procureops-inventory-management      haiku-4-5
-    (ambiguous)            -> escalate=true, no specialist called
+    "requisition"             -> procureops-requisition-intake        haiku-4-5
+    "sourcing_strategy"       -> procureops-sourcing-strategy         sonnet-4-6
+    "sourcing" / "quote"      -> procureops-sourcing                  sonnet-4-6
+    "invoice"                 -> procureops-invoice-verification      sonnet-4-6
+    "inventory" / "reorder"   -> procureops-inventory-management      haiku-4-5
+    (ambiguous)               -> escalate=true, no specialist called
 """
 
 from __future__ import annotations
@@ -31,12 +32,19 @@ SYSTEM_PROMPT = """You are the ProcureOps Router. Your only job is to classify a
 procurement request into exactly one task_type so it can be routed to the correct specialist.
 
 Task types:
-  - "requisition"  — a new purchase request that needs DOA / budget validation before a PO exists
-  - "sourcing"      — comparing competing vendor quotes for a requisition, choosing a vendor
-  - "invoice"       — reconciling a Purchase Order, Goods Receipt Note, and Invoice (three-way match)
-  - "inventory"     — monitoring stock levels, proposing reorder points/quantities
+  - "requisition"        — a new purchase request that needs DOA / budget validation before a PO exists
+  - "sourcing_strategy"  — a vague spend question with NO quotes yet ("what should we do about X costs",
+                           "we need a plan for renewing Y") — needs a shortlist and evaluation approach
+                           before any RFP is even issued
+  - "sourcing"           — quotes already exist and need to be compared to choose a vendor
+  - "invoice"            — reconciling a Purchase Order, Goods Receipt Note, and Invoice (three-way match)
+  - "inventory"          — monitoring stock levels, proposing reorder points/quantities
 
-If the request does not clearly fit one of these four, set ambiguous=true and leave task_type null \
+The distinction between "sourcing_strategy" and "sourcing" matters: if the request mentions specific \
+prices or numbered quotes from named vendors, it's "sourcing". If it's a question about a category \
+or spend pattern with no quotes yet, it's "sourcing_strategy".
+
+If the request does not clearly fit one of these five, set ambiguous=true and leave task_type null \
 rather than guessing. Never invent a task_type outside this list."""
 
 ROUTER_TOOL: dict[str, Any] = {
@@ -47,7 +55,7 @@ ROUTER_TOOL: dict[str, Any] = {
         "properties": {
             "task_type": {
                 "type": ["string", "null"],
-                "enum": ["requisition", "sourcing", "invoice", "inventory", None],
+                "enum": ["requisition", "sourcing_strategy", "sourcing", "invoice", "inventory", None],
                 "description": "The specialist queue this request belongs to, or null if ambiguous.",
             },
             "ambiguous": {
@@ -61,10 +69,11 @@ ROUTER_TOOL: dict[str, Any] = {
 }
 
 _SPECIALIST_BY_TASK_TYPE = {
-    "requisition": AGENT_IDS["requisition_intake"],
-    "sourcing":    AGENT_IDS["sourcing"],
-    "invoice":     AGENT_IDS["invoice_verification"],
-    "inventory":   AGENT_IDS["inventory_management"],
+    "requisition":       AGENT_IDS["requisition_intake"],
+    "sourcing_strategy": AGENT_IDS["sourcing_strategy"],
+    "sourcing":          AGENT_IDS["sourcing"],
+    "invoice":           AGENT_IDS["invoice_verification"],
+    "inventory":         AGENT_IDS["inventory_management"],
 }
 
 

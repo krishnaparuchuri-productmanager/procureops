@@ -57,8 +57,11 @@ CREATE TABLE IF NOT EXISTS policy_versions (
 CREATE_DECISION_REVIEWS_TABLE = """
 CREATE TABLE IF NOT EXISTS decision_reviews (
     id                  TEXT    PRIMARY KEY,        -- UUID v4
-    decision_type       TEXT    NOT NULL
-                        CHECK (decision_type IN ('vendor_selection', 'invoice_verdict', 'reorder_action', 'requisition_intake')),
+    decision_type       TEXT    NOT NULL,             -- validated against DECISION_TYPES in
+                                                        -- agents/common.py at the API layer, not
+                                                        -- a DB CHECK — new specialists keep adding
+                                                        -- decision types and a CHECK here would need
+                                                        -- a migration every time.
     entity_ref          TEXT    NOT NULL,            -- sourcing_case_id / invoice_id / sku / requisition_id
     proposed_by         TEXT    NOT NULL,            -- agent_id, e.g. "procureops-sourcing"
     proposed_at         TEXT    NOT NULL,

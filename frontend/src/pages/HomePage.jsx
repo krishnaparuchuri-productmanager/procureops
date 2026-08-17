@@ -10,6 +10,12 @@ const SPECIALIST_CARDS = [
     gate: 'Threshold-based — can auto-clear',
   },
   {
+    tab: 'sourcing_strategy', agentId: 'procureops-sourcing-strategy',
+    title: 'Sourcing Strategy',
+    desc: 'Turns a vague spend question into a vendor shortlist and weighted evaluation criteria — before any quotes exist.',
+    gate: 'Always human-gated',
+  },
+  {
     tab: 'sourcing', agentId: 'procureops-sourcing',
     title: 'Sourcing / Quote Comparison',
     desc: 'Compares competing vendor quotes on total landed cost, applies the same criteria to every vendor, and recommends — never selects.',
@@ -42,7 +48,7 @@ export default function HomePage() {
     <div>
       <h1 className="text-4xl mb-3">ProcureOps</h1>
       <p className="text-ink-muted text-base mb-8 max-w-2xl">
-        A Router classifies incoming procurement requests and hands off to four specialists. Every
+        A Router classifies incoming procurement requests and hands off to five specialists. Every
         proposal that touches money leaving the company is human-gated by design — an agent can never
         approve its own recommendation. All data on this site is synthetic.
       </p>
@@ -59,7 +65,7 @@ export default function HomePage() {
         <span className="text-sm text-ink-muted">Describe what you need in plain language — the Router picks the specialist.</span>
       </div>
 
-      <h2 className="text-xl mb-4">The four specialists</h2>
+      <h2 className="text-xl mb-4">The five specialists</h2>
       <div className="grid sm:grid-cols-2 gap-3 mb-10">
         {SPECIALIST_CARDS.map((c) => {
           const agent = AGENTS[c.agentId]

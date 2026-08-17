@@ -60,6 +60,17 @@ function Headline({ decisionType, proposal, vendors }) {
       </div>
     )
   }
+  if (decisionType === 'sourcing_strategy') {
+    return (
+      <div>
+        <h3 className="text-2xl mb-1 capitalize">{proposal.sourcing_approach?.replace(/_/g, ' ')}</h3>
+        <p className="text-sm text-ink-muted">
+          {proposal.shortlist?.length || 0} vendor{proposal.shortlist?.length === 1 ? '' : 's'} shortlisted
+          {proposal.competitive_bidding_required && ' · competitive bidding required'}
+        </p>
+      </div>
+    )
+  }
   return <h3 className="text-2xl mb-1">{decisionType}</h3>
 }
 
@@ -118,6 +129,44 @@ function SpecialistDetail({ decisionType, proposal, vendors }) {
         <dt className="text-ink-muted">Vendor</dt><dd>{proposal.vendor_id ? vendorLabel(proposal.vendor_id, vendors) : '—'}</dd>
         <dt className="text-ink-muted">Cost center</dt><dd>{proposal.cost_center || '—'}</dd>
       </dl>
+    )
+  }
+  if (decisionType === 'sourcing_strategy') {
+    return (
+      <div>
+        {proposal.shortlist?.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-2">Shortlist</p>
+            <div className="grid gap-2">
+              {proposal.shortlist.map((s) => (
+                <div key={s.vendor_id} className="border border-rule p-2.5">
+                  <p className="text-sm mb-1">{vendorLabel(s.vendor_id, vendors)}</p>
+                  <p className="text-xs text-ink-muted mb-1">{s.rationale}</p>
+                  {s.risk_flags?.map((f, i) => (
+                    <p key={i} className="text-xs text-accent">⚠ {f}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {proposal.evaluation_criteria?.length > 0 && (
+          <div className="mb-3">
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-2">Evaluation criteria</p>
+            <div className="grid gap-1">
+              {proposal.evaluation_criteria.map((c) => (
+                <div key={c.criterion} className="flex items-center gap-3 text-sm">
+                  <span className="font-mono text-xs text-ink-muted w-10 flex-shrink-0">{c.weight_pct}%</span>
+                  <span>{c.criterion}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {proposal.approach_rationale && (
+          <p className="text-sm text-ink-muted">{proposal.approach_rationale}</p>
+        )}
+      </div>
     )
   }
   return null

@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from db.init_db import init_db
+from db.init_db import init_db, migrate_db
 from seed.demo_seed import seed_demo_data
 
 from routes.decisions import router as decisions_router
@@ -36,6 +36,7 @@ _DB_PATH = Path(__file__).resolve().parent / "db" / "procureops.db"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    migrate_db()
     seed_demo_data()
     yield
 

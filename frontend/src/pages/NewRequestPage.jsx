@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client.js'
 import RequisitionForm from '../components/forms/RequisitionForm.jsx'
 import SourcingForm from '../components/forms/SourcingForm.jsx'
+import SourcingStrategyForm from '../components/forms/SourcingStrategyForm.jsx'
 import InvoiceForm from '../components/forms/InvoiceForm.jsx'
 import InventoryForm from '../components/forms/InventoryForm.jsx'
 import DecisionCard from '../components/DecisionCard.jsx'
@@ -10,6 +11,7 @@ import AskProcureOps from '../components/AskProcureOps.jsx'
 
 const TABS = [
   { key: 'requisition', label: 'Requisition Intake', source: 'an intake form, Slack, or email', decisionType: 'requisition_intake' },
+  { key: 'sourcing_strategy', label: 'Sourcing Strategy', source: 'a category owner or budget review', decisionType: 'sourcing_strategy' },
   { key: 'sourcing', label: 'Sourcing / Quote Comparison', source: 'an RFQ tool or vendor portal', decisionType: 'vendor_selection' },
   { key: 'invoice', label: 'Invoice Verification', source: 'the ERP and vendor AP systems', decisionType: 'invoice_verdict' },
   { key: 'inventory', label: 'Inventory Management', source: 'the warehouse management system', decisionType: 'reorder_action' },
@@ -48,7 +50,7 @@ export default function NewRequestPage() {
     setTab(taskType)
     setResult(null)
     setError(null)
-    if (taskType === 'sourcing') {
+    if (taskType === 'sourcing' || taskType === 'sourcing_strategy') {
       setHandoffText(text)
       setHandoffKey((k) => k + 1)
     }
@@ -61,6 +63,7 @@ export default function NewRequestPage() {
     try {
       let res
       if (tab === 'requisition') res = await api.proposeRequisition(body)
+      if (tab === 'sourcing_strategy') res = await api.proposeSourcingStrategy(body)
       if (tab === 'sourcing') res = await api.proposeSourcing({ sourcing_case_id: `SRC-${Date.now()}`, ...body })
       if (tab === 'invoice') res = await api.proposeInvoice(body)
       if (tab === 'inventory') res = await api.proposeInventory(body)
@@ -106,6 +109,9 @@ export default function NewRequestPage() {
       </p>
 
       {tab === 'requisition' && <RequisitionForm onSubmit={submit} submitting={submitting} />}
+      {tab === 'sourcing_strategy' && (
+        <SourcingStrategyForm key={handoffKey} onSubmit={submit} submitting={submitting} initialSpendDescription={handoffText} />
+      )}
       {tab === 'sourcing' && (
         <SourcingForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} initialDescription={handoffText} />
       )}

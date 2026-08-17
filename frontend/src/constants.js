@@ -13,6 +13,7 @@ export const AGENTS = {
   'procureops-router': { label: 'Router', model: 'Haiku', tier: 'haiku' },
   'procureops-requisition-intake': { label: 'Requisition Intake', model: 'Haiku', tier: 'haiku' },
   'procureops-sourcing': { label: 'Sourcing / Quote Comparison', model: 'Sonnet', tier: 'sonnet' },
+  'procureops-sourcing-strategy': { label: 'Sourcing Strategy', model: 'Sonnet', tier: 'sonnet' },
   'procureops-invoice-verification': { label: 'Invoice Verification', model: 'Sonnet', tier: 'sonnet' },
   'procureops-inventory-management': { label: 'Inventory Management', model: 'Haiku', tier: 'haiku' },
 }
@@ -22,6 +23,7 @@ export const DECISION_TYPE_LABELS = {
   invoice_verdict: 'Invoice Verdict',
   requisition_intake: 'Requisition Intake',
   reorder_action: 'Reorder Action',
+  sourcing_strategy: 'Sourcing Strategy',
 }
 
 export const CORPUS_LABELS = {

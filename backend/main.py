@@ -101,8 +101,10 @@ def list_traces(limit: int = 50):
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
-            "SELECT id, agent_id, timestamp, user_input, retrieved_chunks, latency_ms, "
-            "input_tokens, output_tokens, error FROM traces ORDER BY timestamp DESC LIMIT ?",
+            "SELECT t.id, t.agent_id, t.timestamp, t.user_input, t.retrieved_chunks, t.latency_ms, "
+            "t.input_tokens, t.output_tokens, t.error, d.id AS decision_id "
+            "FROM traces t LEFT JOIN decision_reviews d ON d.trace_id = t.id "
+            "ORDER BY t.timestamp DESC LIMIT ?",
             (limit,),
         ).fetchall()
         result = []

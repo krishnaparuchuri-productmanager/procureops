@@ -162,6 +162,26 @@ CREATE TABLE IF NOT EXISTS policy_drift_flags (
 );
 """
 
+
+# ---------------------------------------------------------------------------
+# negotiation_history — synthetic past negotiation rounds, loaded from
+# data/cases/negotiation_history.json. Ground truth for the win-probability
+# layer (agents/odds.py) -- real aggregate stats computed from these rows,
+# not an LLM-invented percentage. See that file's docstring.
+# ---------------------------------------------------------------------------
+CREATE_NEGOTIATION_HISTORY_TABLE = """
+CREATE TABLE IF NOT EXISTS negotiation_history (
+    negotiation_id   TEXT    PRIMARY KEY,
+    vendor_id        TEXT    NOT NULL REFERENCES vendors(vendor_id),
+    category         TEXT    NOT NULL,
+    date             TEXT    NOT NULL,
+    ask_type         TEXT    NOT NULL,
+    ask_details      TEXT    NOT NULL,
+    outcome          TEXT    NOT NULL CHECK (outcome IN ('accepted', 'rejected', 'partial')),
+    notes            TEXT
+);
+"""
+
 ALL_TABLES = [
     ("vendors",             CREATE_VENDORS_TABLE),
     ("policy_versions",     CREATE_POLICY_VERSIONS_TABLE),
@@ -170,4 +190,5 @@ ALL_TABLES = [
     ("audit_log",           CREATE_AUDIT_LOG_TABLE),
     ("eval_results",        CREATE_EVAL_RESULTS_TABLE),
     ("policy_drift_flags",  CREATE_POLICY_DRIFT_FLAGS_TABLE),
+    ("negotiation_history", CREATE_NEGOTIATION_HISTORY_TABLE),
 ]

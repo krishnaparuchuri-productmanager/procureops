@@ -1,0 +1,57 @@
+{
+  "description": "Synthetic past negotiation rounds — one row per specific ask made to a vendor, with its outcome. Ground truth for the win-probability/odds layer (agents/odds.py). Deliberately correlated, not random: vendors with weaker performance/compliance standing concede more on price; top performers concede more on non-price asks (SLA, contract term) than on price, since price is where their leverage is strongest. Dates are all before the current policy date (2026-08-17).",
+  "ask_types": [
+    "price_reduction", "extended_payment_terms", "shorter_payment_cycle_offered",
+    "longer_contract_term", "volume_commitment_discount", "sla_addition",
+    "expedited_delivery_commitment", "warranty_extension"
+  ],
+  "records": [
+    {"negotiation_id": "NEG-001", "vendor_id": "V-001", "category": "IT Hardware & Software", "date": "2025-09-12", "ask_type": "price_reduction", "ask_details": "Requested 8% reduction on a 50-unit laptop order.", "outcome": "rejected", "notes": "Top performer (96.4% on-time); held firm on price, cited strong demand."},
+    {"negotiation_id": "NEG-002", "vendor_id": "V-001", "category": "IT Hardware & Software", "date": "2026-01-20", "ask_type": "sla_addition", "ask_details": "Requested a formal 24-hour DOA (dead-on-arrival) replacement SLA.", "outcome": "accepted", "notes": "Low-cost concession for them relative to their existing quality process."},
+    {"negotiation_id": "NEG-003", "vendor_id": "V-001", "category": "IT Hardware & Software", "date": "2026-05-03", "ask_type": "longer_contract_term", "ask_details": "Proposed a 24-month standing agreement in exchange for volume pricing.", "outcome": "partial", "notes": "Agreed to 18 months with a smaller discount than requested."},
+
+    {"negotiation_id": "NEG-004", "vendor_id": "V-002", "category": "Office Supplies & Equipment", "date": "2025-11-02", "ask_type": "price_reduction", "ask_details": "Requested 5% off a recurring quarterly supplies order.", "outcome": "rejected", "notes": "98.1% on-time, low defect rate — little incentive to concede on price."},
+    {"negotiation_id": "NEG-005", "vendor_id": "V-002", "category": "Office Supplies & Equipment", "date": "2026-02-14", "ask_type": "extended_payment_terms", "ask_details": "Requested Net 45 instead of standard Net 30.", "outcome": "accepted", "notes": "Non-price ask, low cost for an established relationship."},
+
+    {"negotiation_id": "NEG-006", "vendor_id": "V-003", "category": "Professional Services", "date": "2025-08-19", "ask_type": "price_reduction", "ask_details": "Requested a 10% blended rate reduction for a multi-quarter engagement.", "outcome": "partial", "notes": "Settled at 4% reduction with a volume commitment."},
+    {"negotiation_id": "NEG-007", "vendor_id": "V-003", "category": "Professional Services", "date": "2026-03-30", "ask_type": "sla_addition", "ask_details": "Requested defined milestone acceptance criteria.", "outcome": "accepted", "notes": "Standard ask for a consulting engagement, low friction."},
+
+    {"negotiation_id": "NEG-008", "vendor_id": "V-004", "category": "Raw Materials / Production Inputs", "date": "2025-10-08", "ask_type": "price_reduction", "ask_details": "Requested 6% reduction citing a competitor quote.", "outcome": "partial", "notes": "93.7% on-time, mid-tier leverage; settled at 3%."},
+    {"negotiation_id": "NEG-009", "vendor_id": "V-004", "category": "Raw Materials / Production Inputs", "date": "2026-04-17", "ask_type": "volume_commitment_discount", "ask_details": "Offered a 12-month volume commitment for a per-unit discount.", "outcome": "accepted", "notes": "Predictable demand was valuable to them."},
+
+    {"negotiation_id": "NEG-010", "vendor_id": "V-005", "category": "Facilities & Maintenance", "date": "2025-12-01", "ask_type": "price_reduction", "ask_details": "Requested 5% reduction on the annual maintenance contract.", "outcome": "rejected", "notes": "Incident-free 24-month record gave them leverage to hold price."},
+    {"negotiation_id": "NEG-011", "vendor_id": "V-005", "category": "Facilities & Maintenance", "date": "2026-06-05", "ask_type": "warranty_extension", "ask_details": "Requested extended workmanship warranty on a capital repair.", "outcome": "accepted", "notes": "Low marginal cost to them for a relationship-preserving concession."},
+
+    {"negotiation_id": "NEG-012", "vendor_id": "V-006", "category": "Logistics & Freight", "date": "2025-09-25", "ask_type": "price_reduction", "ask_details": "Requested a per-shipment rate reduction on a new lane.", "outcome": "rejected", "notes": "97.3% on-time; strong performer, held rate card."},
+    {"negotiation_id": "NEG-013", "vendor_id": "V-006", "category": "Logistics & Freight", "date": "2026-02-28", "ask_type": "expedited_delivery_commitment", "ask_details": "Requested a guaranteed 3-day expedited option at standard rate.", "outcome": "partial", "notes": "Offered at a modest surcharge instead of standard rate."},
+
+    {"negotiation_id": "NEG-014", "vendor_id": "V-007", "category": "IT Hardware & Software", "date": "2025-07-14", "ask_type": "price_reduction", "ask_details": "Requested 10% reduction citing a competitor's better cert standing.", "outcome": "accepted", "notes": "Below-average performer (89.6% on-time, 2.1% defect); conceded to retain the account."},
+    {"negotiation_id": "NEG-015", "vendor_id": "V-007", "category": "IT Hardware & Software", "date": "2026-05-01", "ask_type": "sla_addition", "ask_details": "Requested a formal remediation plan tied to the lapsed ISO 27001 cert.", "outcome": "accepted", "notes": "Cert had already expired by this date; vendor agreed to a written renewal timeline to keep the relationship."},
+
+    {"negotiation_id": "NEG-016", "vendor_id": "V-008", "category": "Raw Materials / Production Inputs", "date": "2025-11-19", "ask_type": "price_reduction", "ask_details": "Requested 7% reduction on a bulk fastener order.", "outcome": "accepted", "notes": "90.5% on-time, mid-low tier; conceded readily."},
+    {"negotiation_id": "NEG-017", "vendor_id": "V-008", "category": "Raw Materials / Production Inputs", "date": "2026-06-22", "ask_type": "sla_addition", "ask_details": "Requested proactive notice of any certification lapses going forward.", "outcome": "accepted", "notes": "ISO 9001 was nearing expiry at time of ask; vendor agreed given the timing."},
+
+    {"negotiation_id": "NEG-018", "vendor_id": "V-009", "category": "Professional Services", "date": "2025-10-30", "ask_type": "price_reduction", "ask_details": "Requested 5% off a data analytics retainer.", "outcome": "partial", "notes": "4.6/5 satisfaction gave them some leverage; settled at 2%."},
+    {"negotiation_id": "NEG-019", "vendor_id": "V-009", "category": "Professional Services", "date": "2026-04-08", "ask_type": "expedited_delivery_commitment", "ask_details": "Requested faster dashboard turnaround on standard requests.", "outcome": "accepted", "notes": "Newer vendor relationship, motivated to demonstrate responsiveness."},
+
+    {"negotiation_id": "NEG-020", "vendor_id": "V-010", "category": "Office Supplies & Equipment", "date": "2025-08-05", "ask_type": "price_reduction", "ask_details": "Requested 5% off a print-services contract renewal.", "outcome": "rejected", "notes": "97.8% on-time, strong performer, held price."},
+    {"negotiation_id": "NEG-021", "vendor_id": "V-010", "category": "Office Supplies & Equipment", "date": "2026-03-11", "ask_type": "sla_addition", "ask_details": "Requested a defined reprint policy for quality misses.", "outcome": "accepted", "notes": "Standard, low-cost concession."},
+
+    {"negotiation_id": "NEG-022", "vendor_id": "V-011", "category": "Raw Materials / Production Inputs", "date": "2025-09-16", "ask_type": "price_reduction", "ask_details": "Requested 6% off a composite panel order.", "outcome": "partial", "notes": "92.9% on-time, mid-tier; settled at 2.5%."},
+    {"negotiation_id": "NEG-023", "vendor_id": "V-011", "category": "Raw Materials / Production Inputs", "date": "2026-01-27", "ask_type": "longer_contract_term", "ask_details": "Proposed 12-month standing order for a modest per-unit discount.", "outcome": "accepted", "notes": "Predictability was valuable to a mid-tier supplier."},
+
+    {"negotiation_id": "NEG-024", "vendor_id": "V-012", "category": "Logistics & Freight", "date": "2025-12-14", "ask_type": "price_reduction", "ask_details": "Requested a rate reduction on an expedited lane.", "outcome": "rejected", "notes": "95.8% on-time, strong performer, held rate card."},
+    {"negotiation_id": "NEG-025", "vendor_id": "V-012", "category": "Logistics & Freight", "date": "2026-05-19", "ask_type": "warranty_extension", "ask_details": "Requested extended claims window on damaged shipments.", "outcome": "partial", "notes": "Extended from 7 to 10 days instead of the requested 14."},
+
+    {"negotiation_id": "NEG-026", "vendor_id": "V-013", "category": "Facilities & Maintenance", "date": "2025-10-21", "ask_type": "price_reduction", "ask_details": "Requested 5% off landscaping and security services bundle.", "outcome": "partial", "notes": "Settled at 2% with a longer term commitment."},
+    {"negotiation_id": "NEG-027", "vendor_id": "V-013", "category": "Facilities & Maintenance", "date": "2026-04-02", "ask_type": "sla_addition", "ask_details": "Requested defined incident-response time commitments.", "outcome": "accepted", "notes": "Low-cost formalization of existing practice."},
+
+    {"negotiation_id": "NEG-028", "vendor_id": "V-015", "category": "Professional Services", "date": "2025-08-27", "ask_type": "price_reduction", "ask_details": "Requested 8% reduction on the annual advisory retainer.", "outcome": "accepted", "notes": "88.4% on-time, weakest performer of the services category, and under an active compliance monitoring flag — conceded quickly."},
+    {"negotiation_id": "NEG-029", "vendor_id": "V-015", "category": "Professional Services", "date": "2026-02-09", "ask_type": "sla_addition", "ask_details": "Requested a formal engagement structure to address the split-PO monitoring flag.", "outcome": "accepted", "notes": "Vendor cooperative given the compliance context — strong incentive to demonstrate clean process."},
+    {"negotiation_id": "NEG-030", "vendor_id": "V-015", "category": "Professional Services", "date": "2026-06-30", "ask_type": "shorter_payment_cycle_offered", "ask_details": "We offered quarterly prepayment in exchange for a further 5% discount.", "outcome": "accepted", "notes": "Cash-flow-motivated concession, consistent with their smaller scale."},
+
+    {"negotiation_id": "NEG-031", "vendor_id": "V-016", "category": "IT Hardware & Software", "date": "2025-09-03", "ask_type": "price_reduction", "ask_details": "Requested 8% reduction on a data center hardware refresh.", "outcome": "rejected", "notes": "Top-performing vendor in the category (98.6% on-time); held price, cited demand."},
+    {"negotiation_id": "NEG-032", "vendor_id": "V-016", "category": "IT Hardware & Software", "date": "2026-01-15", "ask_type": "extended_payment_terms", "ask_details": "Requested Net 45 on a large capital order.", "outcome": "accepted", "notes": "Non-price ask, low cost for a stable long-tenured relationship."},
+    {"negotiation_id": "NEG-033", "vendor_id": "V-016", "category": "IT Hardware & Software", "date": "2026-05-22", "ask_type": "price_reduction", "ask_details": "Requested a further 5% off a repeat order.", "outcome": "rejected", "notes": "Consistent with prior pattern — this vendor does not concede on price."}
+  ]
+}

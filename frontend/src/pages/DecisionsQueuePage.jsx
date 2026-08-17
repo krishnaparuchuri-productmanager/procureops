@@ -37,7 +37,7 @@ export default function DecisionsQueuePage() {
           to="/new"
           className="font-mono text-xs uppercase tracking-wider border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors"
         >
-          + New Request
+          + Simulate Request
         </Link>
       </div>
 

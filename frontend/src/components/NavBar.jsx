@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 
 const NAV_LINKS = [
   { to: '/', label: 'Decisions', end: true },
-  { to: '/new', label: 'New Request' },
+  { to: '/new', label: 'Simulate Request' },
   { to: '/vendors', label: 'Vendors' },
   { to: '/policy', label: 'Policy' },
   { to: '/audit', label: 'Audit Log' },

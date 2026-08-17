@@ -31,7 +31,7 @@ export default function App() {
       </main>
       <footer className="border-t border-rule">
         <div className="max-w-6xl mx-auto px-6 py-4 font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center justify-between">
-          <span>ProcureOps — synthetic procurement governance demo. No real ERP or payment integration.</span>
+          <span>ProcureOps — a procurement governance demo. No real ERP or payment integration.</span>
           <span>Built by Krishna Paruchuri</span>
         </div>
       </footer>

@@ -49,10 +49,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ProcureOps",
     description=(
-        "A Procurement Router + 4 Specialists governance vertical: requisition intake, "
-        "sourcing/quote comparison, invoice three-way match, and inventory management, "
-        "with maker-checker enforcement, an INSERT-only audit log, and policy-snapshot-at-"
-        "decision-time. All data is synthetic — no real ERP or payment integration."
+        "A Procurement Router + 6 Specialists governance vertical: requisition intake, "
+        "sourcing strategy, sourcing/quote comparison, invoice three-way match, inventory "
+        "management, and bounded-autonomy contract renewal, with maker-checker enforcement, "
+        "an INSERT-only audit log, and policy-snapshot-at-decision-time. No real ERP or "
+        "payment integration."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -208,4 +209,4 @@ def health_check() -> dict:
 
 @app.get("/", tags=["System"])
 def root() -> dict:
-    return {"message": "ProcureOps API — synthetic procurement governance demo", "docs": "/docs", "health": "/health"}
+    return {"message": "ProcureOps API — procurement governance demo", "docs": "/docs", "health": "/health"}

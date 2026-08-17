@@ -55,9 +55,9 @@ export default function HomePage() {
     <div>
       <h1 className="text-4xl mb-3">ProcureOps</h1>
       <p className="text-ink-muted text-base mb-8 max-w-2xl">
-        A Router classifies incoming procurement requests and hands off to five specialists. Every
+        A Router classifies incoming procurement requests and hands off to six specialists. Every
         proposal that touches money leaving the company is human-gated by design — an agent can never
-        approve its own recommendation. All data on this site is synthetic.
+        approve its own recommendation.
       </p>
 
       <NotificationsPanel />
@@ -72,7 +72,7 @@ export default function HomePage() {
         <span className="text-sm text-ink-muted">Describe what you need in plain language — the Router picks the specialist.</span>
       </div>
 
-      <h2 className="text-xl mb-4">The five specialists</h2>
+      <h2 className="text-xl mb-4">The six specialists</h2>
       <div className="grid sm:grid-cols-2 gap-3 mb-10">
         {SPECIALIST_CARDS.map((c) => {
           const agent = AGENTS[c.agentId]

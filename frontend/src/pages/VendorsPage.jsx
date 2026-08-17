@@ -144,7 +144,7 @@ export default function VendorsPage() {
           </button>
         )}
       </div>
-      <p className="text-ink-muted text-sm mb-6">Synthetic vendor data. All agent decisions ground vendor qualification checks against this table.</p>
+      <p className="text-ink-muted text-sm mb-6">All agent decisions ground vendor qualification checks against this table.</p>
 
       {adding && (
         <AddVendorForm

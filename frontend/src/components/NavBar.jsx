@@ -21,9 +21,6 @@ export default function NavBar() {
               PO
             </span>
             <span className="font-serif text-lg leading-tight truncate">ProcureOps</span>
-            <span className="hidden sm:inline font-mono text-[10px] uppercase tracking-wider text-ink-muted border border-rule px-1.5 py-0.5">
-              Synthetic data
-            </span>
           </Link>
 
           <nav className="flex items-center gap-1 font-mono text-xs uppercase tracking-wide" aria-label="Main navigation">

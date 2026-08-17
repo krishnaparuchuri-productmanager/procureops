@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import NavBar from './components/NavBar.jsx'
+import HomePage from './pages/HomePage.jsx'
 import DecisionsQueuePage from './pages/DecisionsQueuePage.jsx'
 import DecisionDetailPage from './pages/DecisionDetailPage.jsx'
 import NewRequestPage from './pages/NewRequestPage.jsx'
@@ -14,7 +15,8 @@ export default function App() {
       <NavBar />
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
         <Routes>
-          <Route path="/" element={<DecisionsQueuePage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/decisions" element={<DecisionsQueuePage />} />
           <Route path="/decisions/:id" element={<DecisionDetailPage />} />
           <Route path="/new" element={<NewRequestPage />} />
           <Route path="/vendors" element={<VendorsPage />} />

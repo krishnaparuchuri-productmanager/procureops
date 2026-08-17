@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client.js'
 import RequisitionForm from '../components/forms/RequisitionForm.jsx'
 import SourcingForm from '../components/forms/SourcingForm.jsx'
@@ -15,9 +15,13 @@ const TABS = [
   { key: 'inventory', label: 'Inventory Management', source: 'the warehouse management system', decisionType: 'reorder_action' },
 ]
 
+const TAB_KEYS = TABS.map((t) => t.key)
+
 export default function NewRequestPage() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('requisition')
+  const [searchParams] = useSearchParams()
+  const initialTab = TAB_KEYS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'requisition'
+  const [tab, setTab] = useState(initialTab)
   const [vendors, setVendors] = useState([])
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -26,6 +30,13 @@ export default function NewRequestPage() {
   const [handoffKey, setHandoffKey] = useState(0)
 
   useEffect(() => { api.listVendors().then(setVendors).catch(() => {}) }, [])
+
+  useEffect(() => {
+    if (searchParams.get('tab')) {
+      document.getElementById('specialist-forms')?.scrollIntoView({ behavior: 'smooth' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const switchTab = (key) => {
     setTab(key)

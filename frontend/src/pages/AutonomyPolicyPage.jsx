@@ -75,6 +75,7 @@ const METRICS = [
 
 export default function AutonomyPolicyPage() {
   const [policies, setPolicies] = useState([])
+  const [vendorCategories, setVendorCategories] = useState([])
   const [edits, setEdits] = useState({})
   const [updatedBy, setUpdatedBy] = useState('')
   const [savingCategory, setSavingCategory] = useState(null)
@@ -85,8 +86,16 @@ export default function AutonomyPolicyPage() {
   const [newBand, setNewBand] = useState(DEFAULT_NEW_BAND)
   const [creating, setCreating] = useState(false)
 
-  const load = () => api.listAutonomyPolicy().then(setPolicies).catch((e) => setError(e.message))
+  const load = () => {
+    api.listAutonomyPolicy().then(setPolicies).catch((e) => setError(e.message))
+    api.getVendorCategories().then(setVendorCategories).catch(() => {})
+  }
   useEffect(() => { load() }, [])
+
+  // The real source of truth agents/autonomy_rules.py matches against — a
+  // band whose category has zero vendors here will never actually run.
+  const vendorCountFor = (category) => vendorCategories.find((c) => c.category === category)?.vendor_count ?? 0
+  const categorySuggestions = [...new Set([...vendorCategories.map((c) => c.category), ...CATEGORIES])].sort()
 
   const startAdding = () => {
     setNewCategory('')
@@ -190,13 +199,17 @@ export default function AutonomyPolicyPage() {
               className="bg-paper border border-rule px-2 py-1.5 font-serif text-lg text-ink focus:border-ink outline-none w-full max-w-sm"
             />
             <datalist id="autonomy-category-suggestions">
-              {CATEGORIES.filter((c) => !policies.some((p) => p.category === c)).map((c) => <option key={c} value={c} />)}
+              {categorySuggestions.filter((c) => !policies.some((p) => p.category === c)).map((c) => <option key={c} value={c} />)}
             </datalist>
           </div>
           <p className={`text-xs mb-4 -mt-2 ${categoryTaken ? 'text-accent' : 'text-ink-muted'}`}>
             {categoryTaken
               ? `'${newCategory.trim()}' already has a band — edit it below instead.`
-              : 'Pick from the standard categories or type a new one — whatever your Vendor Master actually uses.'}
+              : newCategory.trim()
+                ? vendorCountFor(newCategory.trim()) > 0
+                  ? `${vendorCountFor(newCategory.trim())} vendor(s) currently use '${newCategory.trim()}' — this band will apply to them.`
+                  : `No vendors currently use '${newCategory.trim()}' — this band won't apply to anyone until one does.`
+                : "Type the exact category string your vendors use — Contract Renewal matches on it exactly."}
           </p>
 
           {METRICS.map((m) => (
@@ -231,14 +244,21 @@ export default function AutonomyPolicyPage() {
         </section>
       )}
 
-      {policies.map((p) => (
+      {policies.map((p) => {
+        const vendorCount = vendorCountFor(p.category)
+        return (
         <section key={p.category} className="border border-rule p-5 mb-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-1">
             <h2 className="font-serif text-lg">{p.category}</h2>
             {savedCategory === p.category && (
               <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">Saved</span>
             )}
           </div>
+          <p className={`text-xs mb-4 ${vendorCount === 0 ? 'text-accent' : 'text-ink-muted'}`}>
+            {vendorCount === 0
+              ? "No vendors currently use this category — this band won't apply to anyone."
+              : `${vendorCount} vendor${vendorCount === 1 ? '' : 's'} currently use this category.`}
+          </p>
 
           {METRICS.map((m) => (
             <ThresholdRow
@@ -267,7 +287,8 @@ export default function AutonomyPolicyPage() {
             </button>
           </div>
         </section>
-      ))}
+        )
+      })}
     </div>
   )
 }

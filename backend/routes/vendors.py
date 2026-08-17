@@ -1,11 +1,16 @@
 """
 routes/vendors.py — Approved Vendor Master.
 
-GET  /vendors   full vendor list (unchanged behavior, moved here from main.py)
-POST /vendors   add a new vendor. vendor_id is always server-generated
-                (next "V-0NN" in sequence) -- never client-supplied -- so it
-                can never collide with a seeded id or another concurrent add.
-                Every add writes a VENDOR_CREATED audit_log row.
+GET  /vendors             full vendor list (unchanged behavior, moved here from main.py)
+GET  /vendors/categories  distinct categories actually in use, with a vendor count each --
+                          the real source of truth agents/autonomy_rules.py's category lookup
+                          has to match against, exposed so the frontend can show whether an
+                          Autonomy Config band's category corresponds to any real vendor
+                          instead of that being a silent, unverifiable string match.
+POST /vendors             add a new vendor. vendor_id is always server-generated
+                          (next "V-0NN" in sequence) -- never client-supplied -- so it
+                          can never collide with a seeded id or another concurrent add.
+                          Every add writes a VENDOR_CREATED audit_log row.
 """
 
 from __future__ import annotations
@@ -67,6 +72,18 @@ def list_vendors():
     conn = _connect()
     try:
         rows = conn.execute("SELECT * FROM vendors ORDER BY vendor_id").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+@router.get("/vendors/categories")
+def list_vendor_categories():
+    conn = _connect()
+    try:
+        rows = conn.execute(
+            "SELECT category, COUNT(*) AS vendor_count FROM vendors GROUP BY category ORDER BY category"
+        ).fetchall()
         return [dict(r) for r in rows]
     finally:
         conn.close()

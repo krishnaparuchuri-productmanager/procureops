@@ -52,6 +52,7 @@ export const api = {
     request('/decisions/contract-renewal', { method: 'POST', body: JSON.stringify(body) }),
 
   listVendors: () => request('/vendors'),
+  getVendorCategories: () => request('/vendors/categories'),
   createVendor: (body) => request('/vendors', { method: 'POST', body: JSON.stringify(body) }),
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),

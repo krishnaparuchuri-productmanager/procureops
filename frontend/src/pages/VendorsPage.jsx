@@ -8,7 +8,7 @@ const emptyCert = () => ({ name: '', expiry_date: '' })
 
 function AddVendorForm({ onCreated, onCancel }) {
   const [name, setName] = useState('')
-  const [category, setCategory] = useState(CATEGORIES[0])
+  const [category, setCategory] = useState('')
   const [approvalStatus, setApprovalStatus] = useState('approved')
   const [onTimePct, setOnTimePct] = useState('')
   const [defectRatePct, setDefectRatePct] = useState('')
@@ -23,7 +23,7 @@ function AddVendorForm({ onCreated, onCancel }) {
   const addCert = () => setCertifications((cs) => [...cs, emptyCert()])
   const removeCert = (i) => setCertifications((cs) => cs.filter((_, idx) => idx !== i))
 
-  const canSubmit = name.trim() && category && createdBy.trim()
+  const canSubmit = name.trim() && category.trim() && createdBy.trim()
 
   const submit = async () => {
     setError(null)
@@ -31,7 +31,7 @@ function AddVendorForm({ onCreated, onCancel }) {
     try {
       await api.createVendor({
         name: name.trim(),
-        category,
+        category: category.trim(),
         approval_status: approvalStatus,
         certifications: certifications
           .filter((c) => c.name.trim() && c.expiry_date)
@@ -56,8 +56,18 @@ function AddVendorForm({ onCreated, onCancel }) {
         <Field label="Name">
           <TextInput value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Summit Freight Alliance" />
         </Field>
-        <Field label="Category">
-          <Select options={CATEGORIES} value={category} onChange={(e) => setCategory(e.target.value)} />
+        <Field label="Category" hint="Pick a standard one or type a new one — this is what Autonomy Config bands match against.">
+          <input
+            type="text"
+            list="vendor-category-suggestions"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. IT Hardware & Software"
+            className="w-full bg-paper border border-rule px-2 py-1.5 font-sans text-sm text-ink focus:border-ink outline-none"
+          />
+          <datalist id="vendor-category-suggestions">
+            {CATEGORIES.map((c) => <option key={c} value={c} />)}
+          </datalist>
         </Field>
         <Field label="Approval status">
           <Select

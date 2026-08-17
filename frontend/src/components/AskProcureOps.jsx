@@ -15,12 +15,17 @@ const TASK_TYPE_MODEL = {
   requisition: 'Haiku', sourcing_strategy: 'Sonnet', sourcing: 'Sonnet', invoice: 'Sonnet', inventory: 'Haiku',
 }
 
+// Sourcing/Sourcing Strategy never get field extraction -- a sentence can't
+// responsibly become a set of dollar-amount quote rows. See agents/extraction.py.
+const EXTRACTABLE_TASK_TYPES = new Set(['invoice', 'inventory'])
+
 // STATE MACHINE: idle -> routing -> (routed | ambiguous) -> [requisition only] processing -> done
 export default function AskProcureOps({ vendors, onHandoff }) {
   const [text, setText] = useState(EXAMPLE)
   const [stage, setStage] = useState('idle')
   const [routeResult, setRouteResult] = useState(null)
   const [decisionResult, setDecisionResult] = useState(null)
+  const [extractedCount, setExtractedCount] = useState(0)
   const [error, setError] = useState(null)
 
   const ask = async () => {
@@ -41,6 +46,16 @@ export default function AskProcureOps({ vendors, onHandoff }) {
         const res = await api.proposeRequisition({ raw_text: text })
         setDecisionResult(res)
         setStage('done')
+        return
+      }
+
+      if (EXTRACTABLE_TASK_TYPES.has(route.task_type)) {
+        setStage('extracting')
+        const { fields } = await api.extractFields(route.task_type, text)
+        const found = Object.values(fields || {}).filter((v) => v !== null && v !== undefined).length
+        setExtractedCount(found)
+        setStage('routed')
+        onHandoff(route.task_type, text, fields)
       } else {
         setStage('routed')
         onHandoff(route.task_type, text)
@@ -91,7 +106,7 @@ export default function AskProcureOps({ vendors, onHandoff }) {
         </div>
       )}
 
-      {(stage === 'routed' || stage === 'processing' || stage === 'done') && routeResult && (
+      {(stage === 'routed' || stage === 'processing' || stage === 'extracting' || stage === 'done') && routeResult && (
         <p className="mt-4 text-sm font-mono">
           🧭 Router (Haiku): classified as <span className="text-accent">{TASK_TYPE_LABELS[routeResult.task_type]}</span>
           {' '}→ handing off to <span className="text-accent">{TASK_TYPE_LABELS[routeResult.task_type]}</span>
@@ -99,7 +114,19 @@ export default function AskProcureOps({ vendors, onHandoff }) {
         </p>
       )}
 
-      {stage === 'routed' && (
+      {stage === 'extracting' && (
+        <p className="mt-2 text-sm font-mono text-ink-muted animate-pulse">Pulling out whatever fields are explicitly stated...</p>
+      )}
+
+      {stage === 'routed' && routeResult && EXTRACTABLE_TASK_TYPES.has(routeResult.task_type) && (
+        <p className="mt-2 text-sm text-ink-muted">
+          {extractedCount > 0
+            ? `${extractedCount} field${extractedCount === 1 ? '' : 's'} pulled from your message — review and confirm below, nothing is submitted automatically.`
+            : "Nothing could be confidently pulled from your message — fill in the form below."}
+        </p>
+      )}
+
+      {stage === 'routed' && routeResult && !EXTRACTABLE_TASK_TYPES.has(routeResult.task_type) && (
         <p className="mt-2 text-sm text-ink-muted">
           This request needs structured data the Router can't extract from free text alone — jump to the{' '}
           <strong>{TASK_TYPE_LABELS[routeResult.task_type]}</strong> tab below, already selected for you.

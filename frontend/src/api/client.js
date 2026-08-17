@@ -42,6 +42,8 @@ export const api = {
 
   classify: (userInput) =>
     request('/route', { method: 'POST', body: JSON.stringify({ user_input: userInput }) }),
+  extractFields: (taskType, rawText) =>
+    request('/extract', { method: 'POST', body: JSON.stringify({ task_type: taskType, raw_text: rawText }) }),
 
   listVendors: () => request('/vendors'),
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),

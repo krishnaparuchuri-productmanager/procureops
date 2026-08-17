@@ -19,10 +19,12 @@ from routes.policy import router as policy_router
 
 try:
     from agents.router import route as route_request
+    from agents.extraction import extract_invoice_fields, extract_inventory_fields
     from observability.audit import get_recent_audit
     from routes.policy import get_active_version
 except ImportError:
     from backend.agents.router import route as route_request
+    from backend.agents.extraction import extract_invoice_fields, extract_inventory_fields
     from backend.observability.audit import get_recent_audit
     from backend.routes.policy import get_active_version
 
@@ -77,6 +79,21 @@ app.include_router(policy_router, prefix="/api", tags=["Policy"])
 def classify_request(body: dict):
     """POST {"user_input": "..."} -> {task_type, specialist_agent_id, ambiguous, rationale}."""
     return route_request(body.get("user_input", ""))
+
+
+@app.post("/api/extract", tags=["Router"])
+def extract_fields(body: dict):
+    """POST {"task_type": "invoice"|"inventory", "raw_text": "..."} -> best-effort structured
+    fields, every one nullable. Never called for "sourcing" -- see agents/extraction.py docstring
+    for why fabricating quote rows from a sentence isn't something this endpoint will do. Parsing
+    only; the result is always shown to a human as an editable form before anything is submitted."""
+    task_type = body.get("task_type")
+    raw_text = body.get("raw_text", "")
+    if task_type == "invoice":
+        return {"fields": extract_invoice_fields(raw_text)}
+    if task_type == "inventory":
+        return {"fields": extract_inventory_fields(raw_text)}
+    return {"fields": {}}
 
 
 @app.get("/api/vendors", tags=["Vendors"])

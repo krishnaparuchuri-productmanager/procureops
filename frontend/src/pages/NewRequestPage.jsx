@@ -29,6 +29,7 @@ export default function NewRequestPage() {
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [handoffText, setHandoffText] = useState(null)
+  const [handoffFields, setHandoffFields] = useState(null)
   const [handoffKey, setHandoffKey] = useState(0)
 
   useEffect(() => { api.listVendors().then(setVendors).catch(() => {}) }, [])
@@ -46,14 +47,13 @@ export default function NewRequestPage() {
     setError(null)
   }
 
-  const handleHandoff = (taskType, text) => {
+  const handleHandoff = (taskType, text, fields) => {
     setTab(taskType)
     setResult(null)
     setError(null)
-    if (taskType === 'sourcing' || taskType === 'sourcing_strategy') {
-      setHandoffText(text)
-      setHandoffKey((k) => k + 1)
-    }
+    setHandoffText(text)
+    setHandoffFields(fields || null)
+    setHandoffKey((k) => k + 1)
     document.getElementById('specialist-forms')?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -115,8 +115,12 @@ export default function NewRequestPage() {
       {tab === 'sourcing' && (
         <SourcingForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} initialDescription={handoffText} />
       )}
-      {tab === 'invoice' && <InvoiceForm vendors={vendors} onSubmit={submit} submitting={submitting} />}
-      {tab === 'inventory' && <InventoryForm vendors={vendors} onSubmit={submit} submitting={submitting} />}
+      {tab === 'invoice' && (
+        <InvoiceForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} extractedFields={handoffFields} />
+      )}
+      {tab === 'inventory' && (
+        <InventoryForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} extractedFields={handoffFields} />
+      )}
 
       {error && <p className="text-accent text-sm mt-4 font-mono">{error}</p>}
 

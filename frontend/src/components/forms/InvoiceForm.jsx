@@ -1,14 +1,43 @@
 import { useState } from 'react'
 import { Field, TextInput, NumberInput, DateInput, Select } from './Field.jsx'
 
-const initial = {
+const example = {
   poId: 'PO-5003', poVendorId: 'V-001', sku: 'LAPTOP-ENT-11', poQty: 10, poUnitPrice: 1180.0, poDate: '2026-06-08',
   grnId: 'GRN-5003', grnQtyReceived: 10, grnDate: '2026-06-15',
   invoiceId: 'INV-5003', invoiceVendorId: 'V-001', invQty: 10, invUnitPrice: 1265.0, tax: 885.5, freight: 0, invoiceDate: '2026-06-17',
 }
+const blank = {
+  poId: '', poVendorId: '', sku: '', poQty: '', poUnitPrice: '', poDate: '',
+  grnId: '', grnQtyReceived: '', grnDate: '',
+  invoiceId: '', invoiceVendorId: '', invQty: '', invUnitPrice: '', tax: '', freight: '', invoiceDate: '',
+}
 
-export default function InvoiceForm({ vendors, onSubmit, submitting }) {
-  const [f, setF] = useState(initial)
+// API field name -> form state key. Only fields the extractor can plausibly
+// find in a sentence are mapped; GRN/dates are never guessed at.
+const EXTRACTION_MAP = {
+  po_id: 'poId', vendor_id: 'poVendorId', sku: 'sku', po_qty: 'poQty', po_unit_price: 'poUnitPrice',
+  invoice_id: 'invoiceId', invoice_qty: 'invQty', invoice_unit_price: 'invUnitPrice',
+}
+
+function buildInitial(extractedFields) {
+  if (!extractedFields) return example
+  const merged = { ...blank }
+  const extractedKeys = new Set()
+  for (const [apiKey, formKey] of Object.entries(EXTRACTION_MAP)) {
+    const v = extractedFields[apiKey]
+    if (v !== null && v !== undefined) {
+      merged[formKey] = v
+      extractedKeys.add(formKey)
+      if (formKey === 'poVendorId') { merged.invoiceVendorId = v; extractedKeys.add('invoiceVendorId') }
+    }
+  }
+  return { values: merged, extractedKeys }
+}
+
+export default function InvoiceForm({ vendors, onSubmit, submitting, extractedFields }) {
+  const built = buildInitial(extractedFields)
+  const [f, setF] = useState(built.values || built)
+  const [extractedKeys] = useState(built.extractedKeys || new Set())
   const set = (key) => (e) => setF((s) => ({ ...s, [key]: e.target.value }))
 
   const vendorOptions = [{ value: '', label: 'Select vendor...' }, ...vendors.map((v) => ({ value: v.vendor_id, label: `${v.vendor_id} — ${v.name}` }))]
@@ -52,11 +81,11 @@ export default function InvoiceForm({ vendors, onSubmit, submitting }) {
         <fieldset className="border border-rule p-4">
           <legend className="font-mono text-xs uppercase tracking-wide text-ink-muted px-1">Purchase Order</legend>
           <div className="grid gap-3">
-            <Field label="PO ID"><TextInput value={f.poId} onChange={set('poId')} /></Field>
-            <Field label="Vendor"><Select options={vendorOptions} value={f.poVendorId} onChange={set('poVendorId')} /></Field>
-            <Field label="SKU"><TextInput value={f.sku} onChange={set('sku')} /></Field>
-            <Field label="Qty ordered"><NumberInput value={f.poQty} onChange={set('poQty')} /></Field>
-            <Field label="Agreed unit price"><NumberInput value={f.poUnitPrice} onChange={set('poUnitPrice')} /></Field>
+            <Field label="PO ID" extracted={extractedKeys.has('poId')}><TextInput value={f.poId} onChange={set('poId')} /></Field>
+            <Field label="Vendor" extracted={extractedKeys.has('poVendorId')}><Select options={vendorOptions} value={f.poVendorId} onChange={set('poVendorId')} /></Field>
+            <Field label="SKU" extracted={extractedKeys.has('sku')}><TextInput value={f.sku} onChange={set('sku')} /></Field>
+            <Field label="Qty ordered" extracted={extractedKeys.has('poQty')}><NumberInput value={f.poQty} onChange={set('poQty')} /></Field>
+            <Field label="Agreed unit price" extracted={extractedKeys.has('poUnitPrice')}><NumberInput value={f.poUnitPrice} onChange={set('poUnitPrice')} /></Field>
             <Field label="Issue date"><DateInput value={f.poDate} onChange={set('poDate')} /></Field>
           </div>
         </fieldset>
@@ -73,12 +102,12 @@ export default function InvoiceForm({ vendors, onSubmit, submitting }) {
         <fieldset className="border border-rule p-4">
           <legend className="font-mono text-xs uppercase tracking-wide text-ink-muted px-1">Invoice</legend>
           <div className="grid gap-3">
-            <Field label="Invoice ID"><TextInput value={f.invoiceId} onChange={set('invoiceId')} /></Field>
-            <Field label="Invoicing vendor" hint="Can differ from the PO vendor — that's an unauthorized-vendor test case.">
+            <Field label="Invoice ID" extracted={extractedKeys.has('invoiceId')}><TextInput value={f.invoiceId} onChange={set('invoiceId')} /></Field>
+            <Field label="Invoicing vendor" extracted={extractedKeys.has('invoiceVendorId')} hint="Can differ from the PO vendor — that's an unauthorized-vendor test case.">
               <Select options={vendorOptions} value={f.invoiceVendorId} onChange={set('invoiceVendorId')} />
             </Field>
-            <Field label="Qty invoiced"><NumberInput value={f.invQty} onChange={set('invQty')} /></Field>
-            <Field label="Invoiced unit price"><NumberInput value={f.invUnitPrice} onChange={set('invUnitPrice')} /></Field>
+            <Field label="Qty invoiced" extracted={extractedKeys.has('invQty')}><NumberInput value={f.invQty} onChange={set('invQty')} /></Field>
+            <Field label="Invoiced unit price" extracted={extractedKeys.has('invUnitPrice')}><NumberInput value={f.invUnitPrice} onChange={set('invUnitPrice')} /></Field>
             <Field label="Tax"><NumberInput value={f.tax} onChange={set('tax')} /></Field>
             <Field label="Freight"><NumberInput value={f.freight} onChange={set('freight')} /></Field>
             <Field label="Invoice date"><DateInput value={f.invoiceDate} onChange={set('invoiceDate')} /></Field>

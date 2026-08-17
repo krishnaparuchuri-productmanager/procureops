@@ -1,7 +1,10 @@
-export function Field({ label, hint, children }) {
+export function Field({ label, hint, extracted, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">{label}</span>
+      <span className="block text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">
+        {label}
+        {extracted && <span className="text-accent normal-case font-sans"> · pulled from your message</span>}
+      </span>
       {children}
       {hint && <span className="block text-xs text-ink-muted mt-1 normal-case">{hint}</span>}
     </label>

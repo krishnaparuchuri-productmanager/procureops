@@ -16,6 +16,7 @@ from seed.demo_seed import seed_demo_data
 
 from routes.decisions import router as decisions_router
 from routes.policy import router as policy_router
+from routes.negotiation import router as negotiation_router
 
 try:
     from agents.router import route as route_request
@@ -73,6 +74,7 @@ app.add_middleware(
 
 app.include_router(decisions_router, prefix="/api", tags=["Decisions"])
 app.include_router(policy_router, prefix="/api", tags=["Policy"])
+app.include_router(negotiation_router, prefix="/api", tags=["Negotiation"])
 
 
 @app.post("/api/route", tags=["Router"])

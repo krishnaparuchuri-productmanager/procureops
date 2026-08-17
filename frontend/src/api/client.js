@@ -45,6 +45,9 @@ export const api = {
   extractFields: (taskType, rawText) =>
     request('/extract', { method: 'POST', body: JSON.stringify({ task_type: taskType, raw_text: rawText }) }),
 
+  proposeNegotiationBrief: (body) =>
+    request('/negotiation-brief', { method: 'POST', body: JSON.stringify(body) }),
+
   listVendors: () => request('/vendors'),
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),

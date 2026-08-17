@@ -88,6 +88,18 @@ export default function HomePage() {
         })}
       </div>
 
+      <h2 className="text-xl mb-4">Decision support — not a specialist</h2>
+      <Link to="/negotiation" className="border border-rule p-4 hover:border-ink transition-colors block mb-10">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="font-serif text-lg">Negotiation Brief</span>
+          <span className="font-mono text-[10px] uppercase tracking-wider border border-rule px-1.5 py-0.5 text-ink-muted flex-shrink-0">Sonnet</span>
+        </div>
+        <p className="text-sm text-ink-muted">
+          BATNA, a reasoned ZOPA estimate, and an integrative trade menu for whoever runs the actual
+          negotiation. Not gated — there's no decision to approve, just a strategy brief.
+        </p>
+      </Link>
+
       <h2 className="text-xl mb-4">Browse</h2>
       <div className="grid sm:grid-cols-3 gap-3">
         {SECONDARY_LINKS.map((l) => (

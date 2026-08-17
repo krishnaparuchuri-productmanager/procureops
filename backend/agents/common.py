@@ -38,6 +38,7 @@ AGENT_IDS = {
     "sourcing_strategy":   "procureops-sourcing-strategy",
     "invoice_verification": "procureops-invoice-verification",
     "inventory_management": "procureops-inventory-management",
+    "negotiation_brief":   "procureops-negotiation-brief",
 }
 
 # All valid decision_reviews.decision_type values — validated here (Pydantic

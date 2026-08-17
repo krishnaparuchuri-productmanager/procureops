@@ -8,6 +8,7 @@ import VendorsPage from './pages/VendorsPage.jsx'
 import PolicyPage from './pages/PolicyPage.jsx'
 import AuditLogPage from './pages/AuditLogPage.jsx'
 import AgentActivityPage from './pages/AgentActivityPage.jsx'
+import NegotiationBriefPage from './pages/NegotiationBriefPage.jsx'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/policy" element={<PolicyPage />} />
           <Route path="/audit" element={<AuditLogPage />} />
           <Route path="/activity" element={<AgentActivityPage />} />
+          <Route path="/negotiation" element={<NegotiationBriefPage />} />
         </Routes>
       </main>
       <footer className="border-t border-rule">

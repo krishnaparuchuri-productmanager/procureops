@@ -16,6 +16,7 @@ export const AGENTS = {
   'procureops-sourcing-strategy': { label: 'Sourcing Strategy', model: 'Sonnet', tier: 'sonnet' },
   'procureops-invoice-verification': { label: 'Invoice Verification', model: 'Sonnet', tier: 'sonnet' },
   'procureops-inventory-management': { label: 'Inventory Management', model: 'Haiku', tier: 'haiku' },
+  'procureops-negotiation-brief': { label: 'Negotiation Brief', model: 'Sonnet', tier: 'sonnet' },
 }
 
 export const DECISION_TYPE_LABELS = {

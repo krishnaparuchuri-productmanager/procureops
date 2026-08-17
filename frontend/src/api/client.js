@@ -56,6 +56,7 @@ export const api = {
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),
   getPolicyVersions: (docType) => request(`/policy/versions/${docType}`),
+  createPolicyVersion: (body) => request('/policy/versions', { method: 'POST', body: JSON.stringify(body) }),
   getTraces: (limit = 50) => request(`/traces?limit=${limit}`),
   getNotifications: () => request('/notifications'),
 

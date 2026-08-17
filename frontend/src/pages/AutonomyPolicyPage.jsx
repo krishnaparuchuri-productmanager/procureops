@@ -88,19 +88,19 @@ export default function AutonomyPolicyPage() {
   const load = () => api.listAutonomyPolicy().then(setPolicies).catch((e) => setError(e.message))
   useEffect(() => { load() }, [])
 
-  const availableCategories = CATEGORIES.filter((c) => !policies.some((p) => p.category === c))
-
   const startAdding = () => {
-    setNewCategory(availableCategories[0] || '')
+    setNewCategory('')
     setNewBand(DEFAULT_NEW_BAND)
     setAdding(true)
   }
+
+  const categoryTaken = policies.some((p) => p.category === newCategory.trim())
 
   const create = async () => {
     setError(null)
     setCreating(true)
     try {
-      await api.createAutonomyPolicy({ category: newCategory, ...newBand, updated_by: updatedBy })
+      await api.createAutonomyPolicy({ category: newCategory.trim(), ...newBand, updated_by: updatedBy })
       setAdding(false)
       await load()
     } catch (e) {
@@ -146,7 +146,7 @@ export default function AutonomyPolicyPage() {
     <div>
       <div className="flex items-start justify-between gap-4 mb-1">
         <h1 className="text-3xl">Autonomy Config</h1>
-        {!adding && availableCategories.length > 0 && (
+        {!adding && (
           <button
             onClick={startAdding}
             className="font-mono text-xs uppercase tracking-wider border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors flex-shrink-0"
@@ -181,14 +181,23 @@ export default function AutonomyPolicyPage() {
       {adding && (
         <section className="border border-ink p-5 mb-4">
           <div className="flex items-center justify-between mb-4">
-            <select
+            <input
+              type="text"
+              list="autonomy-category-suggestions"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              className="bg-paper border border-rule px-2 py-1.5 font-serif text-lg text-ink focus:border-ink outline-none"
-            >
-              {availableCategories.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+              placeholder="Category name"
+              className="bg-paper border border-rule px-2 py-1.5 font-serif text-lg text-ink focus:border-ink outline-none w-full max-w-sm"
+            />
+            <datalist id="autonomy-category-suggestions">
+              {CATEGORIES.filter((c) => !policies.some((p) => p.category === c)).map((c) => <option key={c} value={c} />)}
+            </datalist>
           </div>
+          <p className={`text-xs mb-4 -mt-2 ${categoryTaken ? 'text-accent' : 'text-ink-muted'}`}>
+            {categoryTaken
+              ? `'${newCategory.trim()}' already has a band — edit it below instead.`
+              : 'Pick from the standard categories or type a new one — whatever your Vendor Master actually uses.'}
+          </p>
 
           {METRICS.map((m) => (
             <ThresholdRow
@@ -207,7 +216,7 @@ export default function AutonomyPolicyPage() {
           <div className="flex gap-3 mt-4 pt-3 border-t border-rule">
             <button
               onClick={create}
-              disabled={creating || !newCategory || !updatedBy.trim()}
+              disabled={creating || !newCategory.trim() || !updatedBy.trim() || categoryTaken}
               className="font-mono text-xs uppercase tracking-wider border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {creating ? 'Creating...' : 'Create band'}

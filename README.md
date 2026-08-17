@@ -97,14 +97,17 @@ an LLM-invented percentage).
 
 ## Screenshots
 
-<!-- Live screenshots pending capture — see the live demo link above in the meantime. -->
+**Home** — Router, six specialists, the S2P positioning note
 
-| | |
-|---|---|
-| Home — Router, 6 specialists, S2P positioning | *(screenshot pending)* |
-| Decision detail — RAG citations + governance trail | *(screenshot pending)* |
-| Autonomy Config — bounded-autonomy threshold bands | *(screenshot pending)* |
-| Sourcing Strategy — auction mechanism recommendation | *(screenshot pending)* |
+![ProcureOps home page — title, S2P positioning note, notifications panel](docs/screenshots/home-top.png)
+![ProcureOps home page — the six specialists](docs/screenshots/home-specialists.png)
+![ProcureOps home page — Negotiation Brief and Browse links](docs/screenshots/home-browse.png)
+
+**Sourcing Strategy** — form + original workflow stepper (pre-RFP, before any quotes exist)
+
+![Sourcing Strategy form with workflow stepper](docs/screenshots/sourcing-strategy-form.png)
+
+*More screenshots (Decision Detail with RAG citations, Autonomy Config's threshold bands, a completed Sourcing Strategy result with the auction-mechanism recommendation) to follow.*
 
 ## Quickstart (Local)
 

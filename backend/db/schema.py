@@ -203,14 +203,35 @@ CREATE TABLE IF NOT EXISTS autonomy_policy (
 );
 """
 
+# ---------------------------------------------------------------------------
+# vendor_quote_history — synthetic trailing unit-price quotes, loaded from
+# data/cases/vendor_quote_history.json. Ground truth for the winner's-curse
+# check in agents/winners_curse.py: a vendor's CURRENT quote compared only
+# against THAT SAME vendor's own history, never across vendors (unit-price
+# scale differs entirely by category). Real computed statistics, exactly the
+# odds.py / autonomy_rules.py pattern — never an LLM guessing at an anomaly.
+# ---------------------------------------------------------------------------
+CREATE_VENDOR_QUOTE_HISTORY_TABLE = """
+CREATE TABLE IF NOT EXISTS vendor_quote_history (
+    quote_id     TEXT    PRIMARY KEY,
+    vendor_id    TEXT    NOT NULL REFERENCES vendors(vendor_id),
+    category     TEXT    NOT NULL,
+    date         TEXT    NOT NULL,
+    unit_price   REAL    NOT NULL,
+    qty          INTEGER NOT NULL,
+    notes        TEXT
+);
+"""
+
 ALL_TABLES = [
-    ("vendors",             CREATE_VENDORS_TABLE),
-    ("policy_versions",     CREATE_POLICY_VERSIONS_TABLE),
-    ("decision_reviews",    CREATE_DECISION_REVIEWS_TABLE),
-    ("traces",              CREATE_TRACES_TABLE),
-    ("audit_log",           CREATE_AUDIT_LOG_TABLE),
-    ("eval_results",        CREATE_EVAL_RESULTS_TABLE),
-    ("policy_drift_flags",  CREATE_POLICY_DRIFT_FLAGS_TABLE),
-    ("negotiation_history", CREATE_NEGOTIATION_HISTORY_TABLE),
-    ("autonomy_policy",     CREATE_AUTONOMY_POLICY_TABLE),
+    ("vendors",              CREATE_VENDORS_TABLE),
+    ("policy_versions",      CREATE_POLICY_VERSIONS_TABLE),
+    ("decision_reviews",     CREATE_DECISION_REVIEWS_TABLE),
+    ("traces",               CREATE_TRACES_TABLE),
+    ("audit_log",            CREATE_AUDIT_LOG_TABLE),
+    ("eval_results",         CREATE_EVAL_RESULTS_TABLE),
+    ("policy_drift_flags",   CREATE_POLICY_DRIFT_FLAGS_TABLE),
+    ("negotiation_history",  CREATE_NEGOTIATION_HISTORY_TABLE),
+    ("autonomy_policy",      CREATE_AUTONOMY_POLICY_TABLE),
+    ("vendor_quote_history", CREATE_VENDOR_QUOTE_HISTORY_TABLE),
 ]

@@ -44,6 +44,14 @@ supplied, set competitive_bidding_gap=true — this must be flagged, not treated
 - doa_escalation_needed / doa_tier: state whether the winning total exceeds the category's VP \
 threshold from the supplied DOA context, requiring CFO/CEO approval — this is a SEPARATE finding \
 from which vendor is recommended.
+- You are given a Winner's-Curse Price Check per quote, ALREADY COMPUTED (each vendor's current \
+unit price vs THAT SAME vendor's own historical average for this category — never compared across \
+vendors). Do not recompute or second-guess it. If ANY quote is flagged, pricing_risk_notes MUST \
+name which vendor(s) and explain what a flagged quote means for a reviewer: not disqualifying by \
+itself, but a bid unusually far below what this vendor has historically charged can mean a pricing \
+error, a loss-leader that gets renegotiated upward once work starts, or corner-cutting to hit the \
+number — worth a direct conversation with the vendor before award, especially if you're \
+recommending that vendor. If nothing was flagged, say so plainly rather than a generic "no concerns."
 - reason_code must be exactly one of: {", ".join(REASON_CODES)}.
 
 Call submit_sourcing_recommendation with your structured output. Do not call any other tool."""
@@ -76,19 +84,29 @@ SOURCING_TOOL: dict[str, Any] = {
             "competitive_bidding_gap": {"type": "boolean"},
             "doa_escalation_needed": {"type": "boolean"},
             "doa_tier": {"type": ["string", "null"], "description": "e.g. 'VP' or 'CFO/CEO' if escalation is needed."},
+            "pricing_risk_notes": {
+                "type": "string",
+                "description": "Address any winner's-curse-flagged quotes by vendor, or state plainly that none were flagged.",
+            },
             "reason_code": {"type": "string", "enum": REASON_CODES},
             "rationale": {"type": "string"},
             "confidence": {"type": "string", "enum": ["High", "Medium", "Low"]},
         },
         "required": ["landed_costs", "recommended_vendor_id", "vendor_neutrality_note",
                       "competitive_bidding_gap", "doa_escalation_needed", "doa_tier",
-                      "reason_code", "rationale", "confidence"],
+                      "pricing_risk_notes", "reason_code", "rationale", "confidence"],
     },
 }
 
 
-def assess_sourcing(description: str, category: str, quotes: list[dict], current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
-    """Run the Sourcing pipeline. Returns (recommendation_dict, retrieved_chunks, usage). Never auto-clears."""
+def assess_sourcing(
+    description: str, category: str, quotes: list[dict], winners_curse_flags: list[dict],
+    current_date: str = "2026-08-17",
+) -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
+    """Run the Sourcing pipeline. winners_curse_flags is computed by the route
+    handler BEFORE this runs (see agents/winners_curse.py) and handed in as
+    ground truth, same pattern as agents/contract_renewal.py's rule_result.
+    Returns (recommendation_dict, retrieved_chunks, usage). Never auto-clears."""
     policy_chunks = search_docs(f"{category} competitive bidding vendor neutrality", top_k=2, corpus="procurement_policy_manual")
     doa_chunks = full_doa_matrix_chunks()
     terms_chunks = search_docs("freight duty incoterms", top_k=2, corpus="contract_terms")
@@ -106,9 +124,19 @@ def assess_sourcing(description: str, category: str, quotes: list[dict], current
         format_chunks(terms_chunks, "Standard Contract Terms — relevant sections"),
         format_chunks(vendor_chunks, "Vendor Master — full profiles of every quoted vendor"),
     ])
+    flag_lines = "\n".join(
+        f"- {f['vendor_id']}: quoted ${f['quoted_unit_price']:,.2f}/unit vs this vendor's own "
+        f"historical average ${f['historical_avg_unit_price']:,.2f}/unit "
+        f"(n={f['sample_size']}{', low confidence' if f['low_confidence'] else ''}) "
+        f"— {f['deviation_pct']}% deviation — {'FLAGGED' if f['flagged'] else 'not flagged'}"
+        if f["historical_avg_unit_price"] is not None
+        else f"- {f['vendor_id']}: no quote history on file for this category — nothing to compare against."
+        for f in winners_curse_flags
+    )
     user_message = (
         f"## Sourcing Case\nCategory: {category}\nDescription: {description}\n"
-        f"Current date: {current_date}\n\n## Competing Quotes\n{quotes}\n\n{context}"
+        f"Current date: {current_date}\n\n## Competing Quotes\n{quotes}\n\n"
+        f"## Winner's-Curse Price Check (already computed — do not recompute)\n{flag_lines}\n\n{context}"
     )
 
     response = call_sonnet(
@@ -121,7 +149,7 @@ def assess_sourcing(description: str, category: str, quotes: list[dict], current
         return safe_escalate_fallback({
             "landed_costs": [], "recommended_vendor_id": None,
             "vendor_neutrality_note": "N/A - system error", "competitive_bidding_gap": True,
-            "doa_escalation_needed": True, "doa_tier": "CFO/CEO",
+            "doa_escalation_needed": True, "doa_tier": "CFO/CEO", "pricing_risk_notes": "N/A - system error",
         }), chunks, usage_dict(SONNET_MODEL, response)
 
     return response.parsed(), chunks, usage_dict(SONNET_MODEL, response)

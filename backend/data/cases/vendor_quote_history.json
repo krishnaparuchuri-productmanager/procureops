@@ -1,0 +1,49 @@
+{
+  "description": "Synthetic historical unit-price quotes, one vendor's own trailing quotes for their own category — ground truth for the winner's-curse check in agents/winners_curse.py. Never compared across vendors (different categories mean wildly different unit-price scales); only ever a vendor's current quote against ITS OWN history. Two quotes per approved vendor, mildly varied, reflecting a normally price-stable vendor — so a quote that lands far below a vendor's own history is the anomaly the check is built to catch, not noise. V-014 excluded (not on the Approved Vendor Master, same as negotiation_history.json).",
+  "records": [
+    {"quote_id": "VQ-001", "vendor_id": "V-001", "category": "IT Hardware & Software", "date": "2025-11-04", "unit_price": 1150.00, "qty": 40, "notes": "Enterprise laptop refresh, standard config."},
+    {"quote_id": "VQ-002", "vendor_id": "V-001", "category": "IT Hardware & Software", "date": "2026-04-22", "unit_price": 1195.00, "qty": 35, "notes": "Enterprise laptop refresh, standard config."},
+
+    {"quote_id": "VQ-003", "vendor_id": "V-002", "category": "Office Supplies & Equipment", "date": "2025-10-12", "unit_price": 42.00, "qty": 200, "notes": "Standard case of copy paper, quarterly order."},
+    {"quote_id": "VQ-004", "vendor_id": "V-002", "category": "Office Supplies & Equipment", "date": "2026-03-19", "unit_price": 45.00, "qty": 180, "notes": "Standard case of copy paper, quarterly order."},
+
+    {"quote_id": "VQ-005", "vendor_id": "V-003", "category": "Professional Services", "date": "2025-09-08", "unit_price": 165.00, "qty": 120, "notes": "Blended consulting rate, per hour."},
+    {"quote_id": "VQ-006", "vendor_id": "V-003", "category": "Professional Services", "date": "2026-05-14", "unit_price": 172.00, "qty": 95, "notes": "Blended consulting rate, per hour."},
+
+    {"quote_id": "VQ-007", "vendor_id": "V-004", "category": "Raw Materials / Production Inputs", "date": "2025-11-21", "unit_price": 14.50, "qty": 5000, "notes": "Per-unit steel fastener stock."},
+    {"quote_id": "VQ-008", "vendor_id": "V-004", "category": "Raw Materials / Production Inputs", "date": "2026-04-02", "unit_price": 15.20, "qty": 4500, "notes": "Per-unit steel fastener stock."},
+
+    {"quote_id": "VQ-009", "vendor_id": "V-005", "category": "Facilities & Maintenance", "date": "2025-10-30", "unit_price": 620.00, "qty": 12, "notes": "Per-visit HVAC maintenance call."},
+    {"quote_id": "VQ-010", "vendor_id": "V-005", "category": "Facilities & Maintenance", "date": "2026-05-08", "unit_price": 655.00, "qty": 10, "notes": "Per-visit HVAC maintenance call."},
+
+    {"quote_id": "VQ-011", "vendor_id": "V-006", "category": "Logistics & Freight", "date": "2025-09-17", "unit_price": 780.00, "qty": 24, "notes": "Per-shipment rate, standard domestic lane."},
+    {"quote_id": "VQ-012", "vendor_id": "V-006", "category": "Logistics & Freight", "date": "2026-03-25", "unit_price": 810.00, "qty": 20, "notes": "Per-shipment rate, standard domestic lane."},
+
+    {"quote_id": "VQ-013", "vendor_id": "V-007", "category": "IT Hardware & Software", "date": "2025-08-26", "unit_price": 980.00, "qty": 30, "notes": "Enterprise laptop refresh, standard config."},
+    {"quote_id": "VQ-014", "vendor_id": "V-007", "category": "IT Hardware & Software", "date": "2026-02-19", "unit_price": 1020.00, "qty": 28, "notes": "Enterprise laptop refresh, standard config."},
+
+    {"quote_id": "VQ-015", "vendor_id": "V-008", "category": "Raw Materials / Production Inputs", "date": "2025-11-05", "unit_price": 11.80, "qty": 6000, "notes": "Per-unit steel fastener stock."},
+    {"quote_id": "VQ-016", "vendor_id": "V-008", "category": "Raw Materials / Production Inputs", "date": "2026-04-27", "unit_price": 12.40, "qty": 5500, "notes": "Per-unit steel fastener stock."},
+
+    {"quote_id": "VQ-017", "vendor_id": "V-009", "category": "Professional Services", "date": "2025-09-22", "unit_price": 140.00, "qty": 150, "notes": "Data analytics retainer, per hour."},
+    {"quote_id": "VQ-018", "vendor_id": "V-009", "category": "Professional Services", "date": "2026-04-11", "unit_price": 148.00, "qty": 140, "notes": "Data analytics retainer, per hour."},
+
+    {"quote_id": "VQ-019", "vendor_id": "V-010", "category": "Office Supplies & Equipment", "date": "2025-10-01", "unit_price": 38.00, "qty": 220, "notes": "Standard case of copy paper, quarterly order."},
+    {"quote_id": "VQ-020", "vendor_id": "V-010", "category": "Office Supplies & Equipment", "date": "2026-03-06", "unit_price": 40.00, "qty": 210, "notes": "Standard case of copy paper, quarterly order."},
+
+    {"quote_id": "VQ-021", "vendor_id": "V-011", "category": "Raw Materials / Production Inputs", "date": "2025-09-30", "unit_price": 16.00, "qty": 4000, "notes": "Per-unit composite panel stock."},
+    {"quote_id": "VQ-022", "vendor_id": "V-011", "category": "Raw Materials / Production Inputs", "date": "2026-05-19", "unit_price": 16.60, "qty": 3800, "notes": "Per-unit composite panel stock."},
+
+    {"quote_id": "VQ-023", "vendor_id": "V-012", "category": "Logistics & Freight", "date": "2025-08-14", "unit_price": 705.00, "qty": 30, "notes": "Per-shipment rate, standard domestic lane."},
+    {"quote_id": "VQ-024", "vendor_id": "V-012", "category": "Logistics & Freight", "date": "2026-02-27", "unit_price": 725.00, "qty": 26, "notes": "Per-shipment rate, standard domestic lane."},
+
+    {"quote_id": "VQ-025", "vendor_id": "V-013", "category": "Facilities & Maintenance", "date": "2025-11-12", "unit_price": 540.00, "qty": 14, "notes": "Per-visit HVAC maintenance call."},
+    {"quote_id": "VQ-026", "vendor_id": "V-013", "category": "Facilities & Maintenance", "date": "2026-04-30", "unit_price": 565.00, "qty": 12, "notes": "Per-visit HVAC maintenance call."},
+
+    {"quote_id": "VQ-027", "vendor_id": "V-015", "category": "Professional Services", "date": "2025-10-17", "unit_price": 128.00, "qty": 130, "notes": "Consulting engagement, per hour."},
+    {"quote_id": "VQ-028", "vendor_id": "V-015", "category": "Professional Services", "date": "2026-05-26", "unit_price": 135.00, "qty": 110, "notes": "Consulting engagement, per hour."},
+
+    {"quote_id": "VQ-029", "vendor_id": "V-016", "category": "IT Hardware & Software", "date": "2025-09-05", "unit_price": 1225.00, "qty": 45, "notes": "Enterprise laptop refresh, standard config."},
+    {"quote_id": "VQ-030", "vendor_id": "V-016", "category": "IT Hardware & Software", "date": "2026-04-15", "unit_price": 1260.00, "qty": 40, "notes": "Enterprise laptop refresh, standard config."}
+  ]
+}

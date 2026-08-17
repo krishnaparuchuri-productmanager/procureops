@@ -126,6 +126,22 @@ def seed_autonomy_policy(conn: sqlite3.Connection) -> int:
     return len(_DEFAULT_AUTONOMY_POLICY)
 
 
+def seed_vendor_quote_history(conn: sqlite3.Connection) -> int:
+    existing = conn.execute("SELECT COUNT(*) FROM vendor_quote_history").fetchone()[0]
+    if existing > 0:
+        return 0
+
+    path = _DATA_DIR / "cases" / "vendor_quote_history.json"
+    records = json.loads(path.read_text(encoding="utf-8"))["records"]
+    for r in records:
+        conn.execute(
+            "INSERT INTO vendor_quote_history (quote_id, vendor_id, category, date, unit_price, qty, notes) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (r["quote_id"], r["vendor_id"], r["category"], r["date"], r["unit_price"], r["qty"], r.get("notes")),
+        )
+    return len(records)
+
+
 def seed_demo_data() -> None:
     conn = _connect()
     try:
@@ -134,9 +150,11 @@ def seed_demo_data() -> None:
             policy_count = seed_policy_versions(conn)
             negotiation_count = seed_negotiation_history(conn)
             autonomy_count = seed_autonomy_policy(conn)
-        if vendor_count or policy_count or negotiation_count or autonomy_count:
+            quote_history_count = seed_vendor_quote_history(conn)
+        if vendor_count or policy_count or negotiation_count or autonomy_count or quote_history_count:
             print(f"[seed] Loaded {vendor_count} vendors, {policy_count} policy_versions rows, "
-                  f"{negotiation_count} negotiation_history rows, {autonomy_count} autonomy_policy rows.")
+                  f"{negotiation_count} negotiation_history rows, {autonomy_count} autonomy_policy rows, "
+                  f"{quote_history_count} vendor_quote_history rows.")
         else:
             print("[seed] Data already present — skipping.")
     finally:

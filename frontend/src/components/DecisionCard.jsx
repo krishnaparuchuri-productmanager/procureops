@@ -126,6 +126,32 @@ function SpecialistDetail({ decisionType, proposal, vendors }) {
         {proposal.competitive_bidding_gap && (
           <p className="text-sm text-accent mt-2">Fewer than 3 quotes were supplied for a requisition at or above the competitive-bidding threshold.</p>
         )}
+        {proposal.winners_curse_flags?.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-2">
+              Winner's-curse price check — each vendor vs. its own quote history, never vs. other vendors
+            </p>
+            <div className="grid gap-1">
+              {proposal.winners_curse_flags.map((f) => (
+                <div key={f.vendor_id} className={`flex items-center gap-2 text-sm ${f.flagged ? 'text-accent' : 'text-ink-muted'}`}>
+                  <span className={`flex-shrink-0 w-4 h-4 flex items-center justify-center font-mono text-[10px] border rounded-full ${f.flagged ? 'border-accent' : 'border-rule'}`}>
+                    {f.flagged ? '!' : '–'}
+                  </span>
+                  <span>
+                    {vendorLabel(f.vendor_id, vendors)}:{' '}
+                    {f.historical_avg_unit_price != null
+                      ? `$${f.quoted_unit_price.toLocaleString()}/unit vs. historical avg $${f.historical_avg_unit_price.toLocaleString()}/unit (${f.deviation_pct > 0 ? '+' : ''}${f.deviation_pct}%, n=${f.sample_size}${f.low_confidence ? ', low confidence' : ''})`
+                      : 'no quote history on file for this category'}
+                    {f.flagged && ' — flagged'}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {proposal.pricing_risk_notes && (
+              <p className="text-sm mt-2">{proposal.pricing_risk_notes}</p>
+            )}
+          </div>
+        )}
       </div>
     )
   }

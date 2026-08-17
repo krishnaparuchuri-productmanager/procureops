@@ -41,6 +41,7 @@ try:
     from agents.inventory_management import assess_inventory
     from agents.contract_renewal import assess_contract_renewal
     from agents.autonomy_rules import evaluate_renewal
+    from agents.winners_curse import flag_winners_curse
     from agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from observability.audit import write_audit
     from routes.policy import get_active_version, _connect as _policy_connect
@@ -53,6 +54,7 @@ except ImportError:
     from backend.agents.inventory_management import assess_inventory
     from backend.agents.contract_renewal import assess_contract_renewal
     from backend.agents.autonomy_rules import evaluate_renewal
+    from backend.agents.winners_curse import flag_winners_curse
     from backend.agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from backend.observability.audit import write_audit
     from backend.routes.policy import get_active_version, _connect as _policy_connect
@@ -216,20 +218,26 @@ def propose_requisition(body: RequisitionRequest):
 
 @router.post("/decisions/sourcing", status_code=201)
 def propose_sourcing(body: SourcingRequest):
-    assessment, chunks, usage = assess_sourcing(body.description, body.category, body.quotes)
+    # Computed FIRST, handed to the LLM as ground truth — same pattern as
+    # contract_renewal's rule_result. Never something the model asserts on its own.
+    winners_curse_flags = [
+        flag_winners_curse(q["vendor_id"], body.category, q["unit_price"]) for q in body.quotes
+    ]
+    assessment, chunks, usage = assess_sourcing(body.description, body.category, body.quotes, winners_curse_flags)
+    proposal = {**assessment, "winners_curse_flags": winners_curse_flags}
 
     agent_id = AGENT_IDS["sourcing"]
     conn = _connect()
     try:
         with conn:
-            trace_id = _log_trace(conn, agent_id, body.description, chunks, assessment, usage)
+            trace_id = _log_trace(conn, agent_id, body.description, chunks, proposal, usage)
             # auto_cleared is always False here — enforced again inside _create_decision
             # for decision_type='vendor_selection' regardless of what's passed.
             decision_id = _create_decision(
-                conn, "vendor_selection", body.sourcing_case_id, agent_id, assessment,
-                assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), False, trace_id,
+                conn, "vendor_selection", body.sourcing_case_id, agent_id, proposal,
+                proposal.get("reason_code", "INSUFFICIENT_INFORMATION"), False, trace_id,
             )
-        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+        return {"decision_id": decision_id, "assessment": proposal, "sources": chunks,
                 "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()

@@ -9,6 +9,10 @@ const ACTION_LABELS = {
   flag_ambiguous_data: 'Data quality flagged',
 }
 
+const AUCTION_LABELS = {
+  sealed_bid: 'Sealed-bid', english_reverse: 'English reverse auction', vickrey: 'Vickrey (second-price)',
+}
+
 function vendorLabel(vendorId, vendors) {
   const v = vendors?.find((v) => v.vendor_id === vendorId)
   return v ? `${vendorId} — ${v.name}` : vendorId
@@ -254,7 +258,23 @@ function SpecialistDetail({ decisionType, proposal, vendors }) {
           </div>
         )}
         {proposal.approach_rationale && (
-          <p className="text-sm text-ink-muted">{proposal.approach_rationale}</p>
+          <p className="text-sm text-ink-muted mb-4">{proposal.approach_rationale}</p>
+        )}
+        {proposal.auction_recommendation && proposal.auction_recommendation.mechanism !== 'not_applicable' && (
+          <div className="pt-3 border-t border-rule">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-xs font-mono uppercase tracking-wide text-ink-muted">Bidding structure</p>
+              <span className="font-mono text-[10px] uppercase tracking-wider border border-ink px-1.5 py-0.5">
+                {AUCTION_LABELS[proposal.auction_recommendation.mechanism] || proposal.auction_recommendation.mechanism}
+              </span>
+            </div>
+            <p className="text-sm mb-2">{proposal.auction_recommendation.rationale}</p>
+            {proposal.auction_recommendation.tradeoffs?.length > 0 && (
+              <ul className="text-xs text-ink-muted list-disc list-inside space-y-0.5">
+                {proposal.auction_recommendation.tradeoffs.map((t, i) => <li key={i}>{t}</li>)}
+              </ul>
+            )}
+          </div>
         )}
       </div>
     )

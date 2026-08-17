@@ -13,13 +13,13 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from llm_client import call_haiku
+    from llm_client import call_haiku, HAIKU_MODEL
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks, usage_dict
 except ImportError:
-    from backend.llm_client import call_haiku
+    from backend.llm_client import call_haiku, HAIKU_MODEL
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks, usage_dict
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Requisition Intake specialist. You parse a free-text \
 purchase request and validate it against the DOA Matrix and vendor qualification rules supplied \
@@ -69,8 +69,8 @@ REQUISITION_TOOL: dict[str, Any] = {
 }
 
 
-def assess_requisition(raw_text: str) -> tuple[dict[str, Any], list[dict]]:
-    """Run the Requisition Intake pipeline. Returns (assessment_dict, retrieved_chunks)."""
+def assess_requisition(raw_text: str) -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
+    """Run the Requisition Intake pipeline. Returns (assessment_dict, retrieved_chunks, usage)."""
     # DOA Matrix is fetched whole (see full_doa_matrix_chunks docstring) rather
     # than top-k'd against raw_text, which loses the right category section
     # when a requisition's wording (e.g. "laptops") shares no vocabulary with
@@ -100,6 +100,6 @@ def assess_requisition(raw_text: str) -> tuple[dict[str, Any], list[dict]]:
         return safe_escalate_fallback({
             "category": None, "estimated_total_usd": None, "vendor_id": None, "cost_center": None,
             "doa_citation": "N/A - system error",
-        }), chunks
+        }), chunks, usage_dict(HAIKU_MODEL, response)
 
-    return response.parsed(), chunks
+    return response.parsed(), chunks, usage_dict(HAIKU_MODEL, response)

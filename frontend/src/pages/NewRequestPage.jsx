@@ -5,12 +5,14 @@ import RequisitionForm from '../components/forms/RequisitionForm.jsx'
 import SourcingForm from '../components/forms/SourcingForm.jsx'
 import InvoiceForm from '../components/forms/InvoiceForm.jsx'
 import InventoryForm from '../components/forms/InventoryForm.jsx'
+import DecisionCard from '../components/DecisionCard.jsx'
+import AskProcureOps from '../components/AskProcureOps.jsx'
 
 const TABS = [
-  { key: 'requisition', label: 'Requisition Intake', source: 'an intake form, Slack, or email' },
-  { key: 'sourcing', label: 'Sourcing / Quote Comparison', source: 'an RFQ tool or vendor portal' },
-  { key: 'invoice', label: 'Invoice Verification', source: 'the ERP and vendor AP systems' },
-  { key: 'inventory', label: 'Inventory Management', source: 'the warehouse management system' },
+  { key: 'requisition', label: 'Requisition Intake', source: 'an intake form, Slack, or email', decisionType: 'requisition_intake' },
+  { key: 'sourcing', label: 'Sourcing / Quote Comparison', source: 'an RFQ tool or vendor portal', decisionType: 'vendor_selection' },
+  { key: 'invoice', label: 'Invoice Verification', source: 'the ERP and vendor AP systems', decisionType: 'invoice_verdict' },
+  { key: 'inventory', label: 'Inventory Management', source: 'the warehouse management system', decisionType: 'reorder_action' },
 ]
 
 export default function NewRequestPage() {
@@ -20,6 +22,8 @@ export default function NewRequestPage() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [handoffText, setHandoffText] = useState(null)
+  const [handoffKey, setHandoffKey] = useState(0)
 
   useEffect(() => { api.listVendors().then(setVendors).catch(() => {}) }, [])
 
@@ -27,6 +31,17 @@ export default function NewRequestPage() {
     setTab(key)
     setResult(null)
     setError(null)
+  }
+
+  const handleHandoff = (taskType, text) => {
+    setTab(taskType)
+    setResult(null)
+    setError(null)
+    if (taskType === 'sourcing') {
+      setHandoffText(text)
+      setHandoffKey((k) => k + 1)
+    }
+    document.getElementById('specialist-forms')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const submit = async (body) => {
@@ -57,6 +72,11 @@ export default function NewRequestPage() {
         real inbound request would.
       </p>
 
+      <AskProcureOps vendors={vendors} onHandoff={handleHandoff} />
+
+      <h2 id="specialist-forms" className="text-xl mb-1 scroll-mt-20">Or go straight to a specialist</h2>
+      <p className="text-ink-muted text-sm mb-4">Fill in a form directly — same specialists, no routing step.</p>
+
       <div className="flex flex-wrap gap-1 mb-2 font-mono text-xs uppercase tracking-wide">
         {TABS.map((t) => (
           <button
@@ -75,7 +95,9 @@ export default function NewRequestPage() {
       </p>
 
       {tab === 'requisition' && <RequisitionForm onSubmit={submit} submitting={submitting} />}
-      {tab === 'sourcing' && <SourcingForm vendors={vendors} onSubmit={submit} submitting={submitting} />}
+      {tab === 'sourcing' && (
+        <SourcingForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} initialDescription={handoffText} />
+      )}
       {tab === 'invoice' && <InvoiceForm vendors={vendors} onSubmit={submit} submitting={submitting} />}
       {tab === 'inventory' && <InventoryForm vendors={vendors} onSubmit={submit} submitting={submitting} />}
 
@@ -83,13 +105,19 @@ export default function NewRequestPage() {
 
       {result && (
         <section className="mt-8 border border-rule p-5">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-ink-muted mb-3">Agent Response</h2>
-          <pre className="font-mono text-xs whitespace-pre-wrap break-words mb-4">{JSON.stringify(result.assessment, null, 2)}</pre>
+          <DecisionCard
+            decisionType={TABS.find((t) => t.key === tab).decisionType}
+            proposal={result.assessment}
+            sources={result.sources}
+            agentId={result.agent_id}
+            usage={result.usage}
+            vendors={vendors}
+          />
           <button
             onClick={() => navigate(`/decisions/${result.decision_id}`)}
-            className="font-mono text-xs uppercase tracking-wider text-accent hover:underline"
+            className="mt-5 font-mono text-xs uppercase tracking-wider text-accent hover:underline"
           >
-            View decision &rarr;
+            View in Decision Queue &rarr;
           </button>
         </section>
       )}

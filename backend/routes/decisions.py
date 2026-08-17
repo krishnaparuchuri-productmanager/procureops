@@ -24,7 +24,6 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
-import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,12 +40,16 @@ try:
     from agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from observability.audit import write_audit
     from routes.policy import get_active_version, _connect as _policy_connect
+    from retrieval import get_chunk_by_id
 except ImportError:
     from backend.agents.requisition_intake import assess_requisition
     from backend.agents.sourcing import assess_sourcing
     from backend.agents.invoice_verification import assess_invoice
     from backend.agents.inventory_management import assess_inventory
     from backend.agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
+    from backend.observability.audit import write_audit
+    from backend.routes.policy import get_active_version, _connect as _policy_connect
+    from backend.retrieval import get_chunk_by_id
     from backend.observability.audit import write_audit
     from backend.routes.policy import get_active_version, _connect as _policy_connect
 
@@ -72,7 +75,7 @@ def _connect() -> sqlite3.Connection:
 
 
 def _log_trace(conn: sqlite3.Connection, agent_id: str, user_input: str, chunks: list[dict],
-               model_output: dict, latency_ms: int) -> str:
+               model_output: dict, usage: dict) -> str:
     trace_id = str(uuid.uuid4())
     conn.execute(
         "INSERT INTO traces (id, agent_id, timestamp, user_input, retrieved_chunks, "
@@ -80,7 +83,8 @@ def _log_trace(conn: sqlite3.Connection, agent_id: str, user_input: str, chunks:
         "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
         (trace_id, agent_id, _now(), user_input,
          json.dumps([c.get("chunk_id") for c in chunks]), "v1",
-         json.dumps(model_output), latency_ms, None, None, None),
+         json.dumps(model_output), usage.get("latency_ms"),
+         usage.get("input_tokens"), usage.get("output_tokens"), None),
     )
     return trace_id
 
@@ -171,86 +175,82 @@ class ReviewDecision(BaseModel):
 
 @router.post("/decisions/requisition", status_code=201)
 def propose_requisition(body: RequisitionRequest):
-    t0 = time.monotonic()
-    assessment, chunks = assess_requisition(body.raw_text)
-    latency_ms = int((time.monotonic() - t0) * 1000)
+    assessment, chunks, usage = assess_requisition(body.raw_text)
 
     agent_id = AGENT_IDS["requisition_intake"]
     conn = _connect()
     try:
         with conn:
-            trace_id = _log_trace(conn, agent_id, body.raw_text, chunks, assessment, latency_ms)
+            trace_id = _log_trace(conn, agent_id, body.raw_text, chunks, assessment, usage)
             auto_cleared = assessment.get("action") == "auto_clear"
             decision_id = _create_decision(
                 conn, "requisition_intake", body.requisition_id or str(uuid.uuid4()),
                 agent_id, assessment, assessment.get("reason_code", "INSUFFICIENT_INFORMATION"),
                 auto_cleared, trace_id,
             )
-        return {"decision_id": decision_id, "assessment": assessment}
+        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()
 
 
 @router.post("/decisions/sourcing", status_code=201)
 def propose_sourcing(body: SourcingRequest):
-    t0 = time.monotonic()
-    assessment, chunks = assess_sourcing(body.description, body.category, body.quotes)
-    latency_ms = int((time.monotonic() - t0) * 1000)
+    assessment, chunks, usage = assess_sourcing(body.description, body.category, body.quotes)
 
     agent_id = AGENT_IDS["sourcing"]
     conn = _connect()
     try:
         with conn:
-            trace_id = _log_trace(conn, agent_id, body.description, chunks, assessment, latency_ms)
+            trace_id = _log_trace(conn, agent_id, body.description, chunks, assessment, usage)
             # auto_cleared is always False here — enforced again inside _create_decision
             # for decision_type='vendor_selection' regardless of what's passed.
             decision_id = _create_decision(
                 conn, "vendor_selection", body.sourcing_case_id, agent_id, assessment,
                 assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), False, trace_id,
             )
-        return {"decision_id": decision_id, "assessment": assessment}
+        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()
 
 
 @router.post("/decisions/invoice", status_code=201)
 def propose_invoice(body: InvoiceRequest):
-    t0 = time.monotonic()
-    assessment, chunks = assess_invoice(body.po, body.grn, body.invoice, body.prior_invoices)
-    latency_ms = int((time.monotonic() - t0) * 1000)
+    assessment, chunks, usage = assess_invoice(body.po, body.grn, body.invoice, body.prior_invoices)
 
     agent_id = AGENT_IDS["invoice_verification"]
     conn = _connect()
     try:
         with conn:
-            trace_id = _log_trace(conn, agent_id, json.dumps(body.invoice), chunks, assessment, latency_ms)
+            trace_id = _log_trace(conn, agent_id, json.dumps(body.invoice), chunks, assessment, usage)
             decision_id = _create_decision(
                 conn, "invoice_verdict", body.match_id, agent_id, assessment,
                 assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), False, trace_id,
             )
-        return {"decision_id": decision_id, "assessment": assessment}
+        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()
 
 
 @router.post("/decisions/inventory", status_code=201)
 def propose_inventory(body: InventoryRequest):
-    t0 = time.monotonic()
-    assessment, chunks = assess_inventory(body.sku_record)
-    latency_ms = int((time.monotonic() - t0) * 1000)
+    assessment, chunks, usage = assess_inventory(body.sku_record)
 
     agent_id = AGENT_IDS["inventory_management"]
     sku = body.sku_record.get("sku", str(uuid.uuid4()))
     conn = _connect()
     try:
         with conn:
-            trace_id = _log_trace(conn, agent_id, json.dumps(body.sku_record), chunks, assessment, latency_ms)
+            trace_id = _log_trace(conn, agent_id, json.dumps(body.sku_record), chunks, assessment, usage)
             auto_cleared = assessment.get("action") in _AUTO_CLEARABLE_ACTIONS
             decision_id = _create_decision(
                 conn, "reorder_action", sku, agent_id, assessment,
                 assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), auto_cleared, trace_id,
             )
-        return {"decision_id": decision_id, "assessment": assessment}
+        return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()
 
@@ -286,7 +286,20 @@ def get_decision(decision_id: str):
         row = conn.execute("SELECT * FROM decision_reviews WHERE id=?", (decision_id,)).fetchone()
         if not row:
             raise HTTPException(404, "Decision not found")
-        return dict(row)
+        result = dict(row)
+
+        trace = None
+        sources = []
+        if row["trace_id"]:
+            trace_row = conn.execute("SELECT * FROM traces WHERE id=?", (row["trace_id"],)).fetchone()
+            if trace_row:
+                trace = dict(trace_row)
+                chunk_ids = json.loads(trace["retrieved_chunks"] or "[]")
+                sources = [c for c in (get_chunk_by_id(cid) for cid in chunk_ids) if c is not None]
+
+        result["trace"] = trace
+        result["sources"] = sources
+        return result
     finally:
         conn.close()
 

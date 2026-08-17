@@ -152,25 +152,25 @@ def run_actual(case: dict) -> dict:
     if specialist == "requisition_intake":
         reqs = _load_json("requisitions.json")
         src = _find_source(reqs, "requisition_id", source_id)
-        assessment, _ = assess_requisition(src["raw_text"])
+        assessment, _, _ = assess_requisition(src["raw_text"])
         return assessment
 
     if specialist == "sourcing":
         quotes = _load_json("quotes.json")
         src = _find_source(quotes, "sourcing_case_id", source_id)
-        assessment, _ = assess_sourcing(src["description"], src["category"], src["quotes"])
+        assessment, _, _ = assess_sourcing(src["description"], src["category"], src["quotes"])
         return assessment
 
     if specialist == "invoice_verification":
         matches = _load_json("three_way_match.json")
         src = _find_source(matches, "match_id", source_id)
-        assessment, _ = assess_invoice(src["po"], src["grn"], src["invoice"])
+        assessment, _, _ = assess_invoice(src["po"], src["grn"], src["invoice"])
         return assessment
 
     if specialist == "inventory_management":
         inv = _load_json("inventory.json")
         src = _find_source(inv, "sku", source_id)
-        assessment, _ = assess_inventory(src)
+        assessment, _, _ = assess_inventory(src)
         return assessment
 
     raise ValueError(f"Unknown specialist: {specialist}")

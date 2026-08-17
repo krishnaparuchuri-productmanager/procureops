@@ -15,13 +15,13 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from llm_client import call_haiku
+    from llm_client import call_haiku, HAIKU_MODEL
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, usage_dict
 except ImportError:
-    from backend.llm_client import call_haiku
+    from backend.llm_client import call_haiku, HAIKU_MODEL
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, usage_dict
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Inventory Management specialist. You monitor stock \
 levels and PROPOSE reorder points and quantities. You never generate or transmit an actual \
@@ -65,8 +65,8 @@ INVENTORY_TOOL: dict[str, Any] = {
 }
 
 
-def assess_inventory(sku_record: dict, current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict]]:
-    """Run the Inventory Management pipeline. Returns (assessment_dict, retrieved_chunks)."""
+def assess_inventory(sku_record: dict, current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
+    """Run the Inventory Management pipeline. Returns (assessment_dict, retrieved_chunks, usage)."""
     vendor_id = sku_record.get("preferred_vendor_id", "")
     # Full profile (known vendor_id) so the Certifications section is always
     # present, not just whichever chunk happened to rank in a top-k slice.
@@ -89,6 +89,6 @@ def assess_inventory(sku_record: dict, current_date: str = "2026-08-17") -> tupl
     if not response.success:
         return safe_escalate_fallback({
             "action": "flag_ambiguous_data", "proposed_reorder_qty": None,
-        }), chunks
+        }), chunks, usage_dict(HAIKU_MODEL, response)
 
-    return response.parsed(), chunks
+    return response.parsed(), chunks, usage_dict(HAIKU_MODEL, response)

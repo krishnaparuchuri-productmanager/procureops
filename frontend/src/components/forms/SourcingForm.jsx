@@ -4,8 +4,8 @@ import { CATEGORIES } from '../../constants.js'
 
 const emptyQuote = () => ({ vendor_id: '', unit_price: '', qty: '', tax_pct: '', freight_flat: '', duty_flat: '', lead_time_days: '' })
 
-export default function SourcingForm({ vendors, onSubmit, submitting }) {
-  const [description, setDescription] = useState('50 enterprise laptops for the engineering org refresh.')
+export default function SourcingForm({ vendors, onSubmit, submitting, initialDescription }) {
+  const [description, setDescription] = useState(initialDescription || '50 enterprise laptops for the engineering org refresh.')
   const [category, setCategory] = useState(CATEGORIES[0])
   const [quotes, setQuotes] = useState([
     { vendor_id: 'V-001', unit_price: 1180, qty: 50, tax_pct: 7.0, freight_flat: 900, duty_flat: 0, lead_time_days: 12 },

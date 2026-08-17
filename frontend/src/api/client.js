@@ -45,4 +45,5 @@ export const api = {
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),
   getPolicyVersions: (docType) => request(`/policy/versions/${docType}`),
+  getTraces: (limit = 50) => request(`/traces?limit=${limit}`),
 }

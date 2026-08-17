@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { decisionStatusBadge } from '../components/Badge.jsx'
+import DecisionCard from '../components/DecisionCard.jsx'
 
 export default function DecisionDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [decision, setDecision] = useState(null)
+  const [vendors, setVendors] = useState([])
   const [drift, setDrift] = useState(null)
   const [reviewedBy, setReviewedBy] = useState('')
   const [checkerReason, setCheckerReason] = useState('')
@@ -15,7 +17,7 @@ export default function DecisionDetailPage() {
 
   const load = () => api.getDecision(id).then(setDecision).catch((e) => setError(e.message))
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => { load(); api.listVendors().then(setVendors).catch(() => {}) }, [id])
 
   const proposal = decision ? JSON.parse(decision.proposal) : null
 
@@ -55,8 +57,14 @@ export default function DecisionDetailPage() {
       </p>
 
       <section className="border border-rule p-5 mb-6">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-muted mb-3">Agent Proposal</h2>
-        <pre className="font-mono text-xs whitespace-pre-wrap break-words">{JSON.stringify(proposal, null, 2)}</pre>
+        <DecisionCard
+          decisionType={decision.decision_type}
+          proposal={proposal}
+          sources={decision.sources}
+          agentId={decision.proposed_by}
+          usage={decision.trace}
+          vendors={vendors}
+        />
       </section>
 
       <section className="border border-rule p-5 mb-6">

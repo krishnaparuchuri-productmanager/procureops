@@ -55,6 +55,19 @@ def format_chunks(chunks: list[dict], label: str) -> str:
     return "\n".join(lines)
 
 
+def usage_dict(model: str, response: Any) -> dict[str, Any]:
+    """Build the {model, input_tokens, output_tokens, latency_ms} shape stored
+    alongside a trace, from an LLMResponse. Used for the Agent Activity view —
+    a failed call still reports its (zeroed) usage rather than silently
+    omitting it, since the point is showing what actually happened."""
+    return {
+        "model": model,
+        "input_tokens": getattr(response, "input_tokens", 0),
+        "output_tokens": getattr(response, "output_tokens", 0),
+        "latency_ms": getattr(response, "latency_ms", 0),
+    }
+
+
 def vendor_profile_chunks(vendor_ref: str, known_id: bool = False) -> list[dict]:
     """Return the FULL profile (all sections) for one vendor, never a partial
     top-k slice. If known_id=True, vendor_ref is treated as an exact vendor_id

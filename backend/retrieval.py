@@ -215,5 +215,15 @@ def get_doc_chunks(doc_id_prefix: str, corpus: Optional[str] = None) -> List[dic
     return [c.as_dict() for c in matches]
 
 
+def get_chunk_by_id(chunk_id: str) -> Optional[dict]:
+    """Resolve a single chunk_id (as stored in traces.retrieved_chunks) back to
+    its full text + metadata, for displaying citations in the UI."""
+    index = _get_index()
+    for c in index.chunks:
+        if c.chunk_id == chunk_id:
+            return c.as_dict()
+    return None
+
+
 def get_all_chunks() -> List[dict]:
     return [c.as_dict() for c in _get_index().chunks]

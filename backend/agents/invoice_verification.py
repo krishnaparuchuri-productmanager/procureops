@@ -13,13 +13,13 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from llm_client import call_sonnet
+    from llm_client import call_sonnet, SONNET_MODEL
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, usage_dict
 except ImportError:
-    from backend.llm_client import call_sonnet
+    from backend.llm_client import call_sonnet, SONNET_MODEL
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, usage_dict
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Invoice Verification specialist. You perform a \
 three-way match between a Purchase Order, a Goods Receipt Note, and an Invoice, and produce a \
@@ -104,6 +104,6 @@ def assess_invoice(po: dict, grn: dict, invoice: dict, prior_invoices: list[dict
             "discrepancy_type": "unauthorized_vendor", "variance_pct": None,
             "duplicate_invoice_suspected": False,
             "resolution_next_steps": "Manual review required due to a system error.",
-        }), chunks
+        }), chunks, usage_dict(SONNET_MODEL, response)
 
-    return response.parsed(), chunks
+    return response.parsed(), chunks, usage_dict(SONNET_MODEL, response)

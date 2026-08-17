@@ -22,3 +22,10 @@ export function decisionStatusBadge(decision) {
   if (decision.decision === 'rejected') return <Badge variant="rejected">Rejected</Badge>
   return <Badge variant="pending">Pending review</Badge>
 }
+
+const CONFIDENCE_VARIANTS = { High: 'approved', Medium: 'auto', Low: 'rejected' }
+
+export function ConfidenceBadge({ confidence }) {
+  if (!confidence) return null
+  return <Badge variant={CONFIDENCE_VARIANTS[confidence] || 'neutral'}>{confidence} confidence</Badge>
+}

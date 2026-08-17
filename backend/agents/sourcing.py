@@ -14,13 +14,13 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from llm_client import call_sonnet
+    from llm_client import call_sonnet, SONNET_MODEL
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks, usage_dict
 except ImportError:
-    from backend.llm_client import call_sonnet
+    from backend.llm_client import call_sonnet, SONNET_MODEL
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks, usage_dict
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Sourcing / Quote Comparison specialist. You compare \
 competing vendor quotes and RECOMMEND a vendor — you never select or approve one; every \
@@ -87,8 +87,8 @@ SOURCING_TOOL: dict[str, Any] = {
 }
 
 
-def assess_sourcing(description: str, category: str, quotes: list[dict], current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict]]:
-    """Run the Sourcing pipeline. Returns (recommendation_dict, retrieved_chunks). Never auto-clears."""
+def assess_sourcing(description: str, category: str, quotes: list[dict], current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
+    """Run the Sourcing pipeline. Returns (recommendation_dict, retrieved_chunks, usage). Never auto-clears."""
     policy_chunks = search_docs(f"{category} competitive bidding vendor neutrality", top_k=2, corpus="procurement_policy_manual")
     doa_chunks = full_doa_matrix_chunks()
     terms_chunks = search_docs("freight duty incoterms", top_k=2, corpus="contract_terms")
@@ -122,6 +122,6 @@ def assess_sourcing(description: str, category: str, quotes: list[dict], current
             "landed_costs": [], "recommended_vendor_id": None,
             "vendor_neutrality_note": "N/A - system error", "competitive_bidding_gap": True,
             "doa_escalation_needed": True, "doa_tier": "CFO/CEO",
-        }), chunks
+        }), chunks, usage_dict(SONNET_MODEL, response)
 
-    return response.parsed(), chunks
+    return response.parsed(), chunks, usage_dict(SONNET_MODEL, response)

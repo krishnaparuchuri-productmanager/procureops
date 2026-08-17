@@ -24,6 +24,7 @@ except ImportError:
     from backend.agents.router import route as route_request
     from backend.observability.audit import get_recent_audit
 
+import json
 import sqlite3
 from pathlib import Path
 
@@ -89,6 +90,30 @@ def list_vendors():
 @app.get("/api/audit", tags=["Audit"])
 def audit_log(limit: int = 50):
     return get_recent_audit(limit=limit)
+
+
+@app.get("/api/traces", tags=["Traces"])
+def list_traces(limit: int = 50):
+    """Recent agent runs — the Agent Activity view. Model tier isn't stored per
+    row (it's a fixed fact of which agent ran, not a per-call variable), so the
+    frontend derives it from agent_id."""
+    conn = sqlite3.connect(_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT id, agent_id, timestamp, user_input, retrieved_chunks, latency_ms, "
+            "input_tokens, output_tokens, error FROM traces ORDER BY timestamp DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        result = []
+        for r in rows:
+            d = dict(r)
+            d["retrieved_chunk_count"] = len(json.loads(d["retrieved_chunks"] or "[]"))
+            del d["retrieved_chunks"]
+            result.append(d)
+        return result
+    finally:
+        conn.close()
 
 
 @app.get("/health", tags=["System"])

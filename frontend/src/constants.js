@@ -17,6 +17,13 @@ export const AGENTS = {
   'procureops-inventory-management': { label: 'Inventory Management', model: 'Haiku', tier: 'haiku' },
 }
 
+export const DECISION_TYPE_LABELS = {
+  vendor_selection: 'Vendor Selection',
+  invoice_verdict: 'Invoice Verdict',
+  requisition_intake: 'Requisition Intake',
+  reorder_action: 'Reorder Action',
+}
+
 export const CORPUS_LABELS = {
   procurement_policy_manual: 'Procurement Policy Manual',
   doa_matrix: 'DOA Matrix',

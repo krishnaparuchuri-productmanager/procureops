@@ -46,4 +46,5 @@ export const api = {
   getPolicyCurrent: () => request('/policy/current'),
   getPolicyVersions: (docType) => request(`/policy/versions/${docType}`),
   getTraces: (limit = 50) => request(`/traces?limit=${limit}`),
+  getNotifications: () => request('/notifications'),
 }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { AGENTS } from '../constants.js'
+import NotificationsPanel from '../components/NotificationsPanel.jsx'
 
 const SPECIALIST_CARDS = [
   {
@@ -45,6 +46,8 @@ export default function HomePage() {
         proposal that touches money leaving the company is human-gated by design — an agent can never
         approve its own recommendation. All data on this site is synthetic.
       </p>
+
+      <NotificationsPanel />
 
       <div className="flex items-center gap-4 mb-10">
         <Link

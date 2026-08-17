@@ -20,9 +20,11 @@ from routes.policy import router as policy_router
 try:
     from agents.router import route as route_request
     from observability.audit import get_recent_audit
+    from routes.policy import get_active_version
 except ImportError:
     from backend.agents.router import route as route_request
     from backend.observability.audit import get_recent_audit
+    from backend.routes.policy import get_active_version
 
 import json
 import sqlite3
@@ -114,6 +116,73 @@ def list_traces(limit: int = 50):
             del d["retrieved_chunks"]
             result.append(d)
         return result
+    finally:
+        conn.close()
+
+
+# Reason codes that warrant attention regardless of dollar value — matches
+# Procurement Policy Manual Section 9's compliance/fraud indicators plus the
+# vendor-qualification failures. Not in this map = "low" (routine escalations
+# like a plain DOA threshold breach still need review, just aren't urgent).
+_HIGH_SEVERITY_REASON_CODES = {
+    "DUPLICATE_INVOICE_SUSPECTED", "SPLIT_PO_PATTERN",
+    "VENDOR_NOT_APPROVED", "UNAUTHORIZED_VENDOR",
+}
+_MEDIUM_SEVERITY_REASON_CODES = {
+    "EXCEEDS_DOA_THRESHOLD", "PRICE_MISMATCH", "QTY_MISMATCH", "VENDOR_CERT_EXPIRED",
+}
+_SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+
+
+def _severity(reason_code: str) -> str:
+    if reason_code in _HIGH_SEVERITY_REASON_CODES:
+        return "high"
+    if reason_code in _MEDIUM_SEVERITY_REASON_CODES:
+        return "medium"
+    return "low"
+
+
+@app.get("/api/notifications", tags=["Notifications"])
+def get_notifications():
+    """Aggregates what actually needs a human's attention: pending reviews
+    (ranked by severity, not just recency) and any pending decision whose
+    cited policy/DOA version has since been superseded. Read-only — computing
+    drift here never writes a policy_drift_flags row; that stays an explicit
+    action on the decision detail page."""
+    conn = sqlite3.connect(_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT id, decision_type, entity_ref, proposed_at, reason_code, "
+            "policy_version_id, doa_version_id FROM decision_reviews "
+            "WHERE decision IS NULL AND auto_cleared=0 ORDER BY proposed_at ASC"
+        ).fetchall()
+
+        policy_row = get_active_version(conn, "procurement_policy_manual")
+        doa_row = get_active_version(conn, "doa_matrix")
+        current_policy_id = policy_row["id"] if policy_row else None
+        current_doa_id = doa_row["id"] if doa_row else None
+
+        pending = []
+        drifted_ids = []
+        for r in rows:
+            d = {
+                "id": r["id"], "decision_type": r["decision_type"], "entity_ref": r["entity_ref"],
+                "proposed_at": r["proposed_at"], "reason_code": r["reason_code"],
+                "severity": _severity(r["reason_code"]),
+            }
+            pending.append(d)
+            if r["policy_version_id"] != current_policy_id or r["doa_version_id"] != current_doa_id:
+                drifted_ids.append(r["id"])
+
+        pending.sort(key=lambda d: (_SEVERITY_ORDER[d["severity"]], d["proposed_at"]))
+
+        return {
+            "pending_count": len(pending),
+            "high_severity_count": sum(1 for p in pending if p["severity"] == "high"),
+            "pending": pending[:10],
+            "drifted_decision_ids": drifted_ids,
+        }
     finally:
         conn.close()
 

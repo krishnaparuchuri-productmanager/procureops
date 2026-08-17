@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { decisionStatusBadge } from '../components/Badge.jsx'
-
-const TYPE_LABELS = {
-  vendor_selection: 'Vendor Selection',
-  invoice_verdict: 'Invoice Verdict',
-  requisition_intake: 'Requisition Intake',
-  reorder_action: 'Reorder Action',
-}
+import { DECISION_TYPE_LABELS as TYPE_LABELS } from '../constants.js'
 
 export default function DecisionsQueuePage() {
   const [decisions, setDecisions] = useState(null)

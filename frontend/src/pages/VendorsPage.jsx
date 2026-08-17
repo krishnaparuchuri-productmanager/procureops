@@ -59,15 +59,25 @@ function AddVendorForm({ onCreated, onCancel }) {
         <Field label="Category" hint="Pick a standard one or type a new one — this is what Autonomy Config bands match against.">
           <input
             type="text"
-            list="vendor-category-suggestions"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g. IT Hardware & Software"
             className="w-full bg-paper border border-rule px-2 py-1.5 font-sans text-sm text-ink focus:border-ink outline-none"
           />
-          <datalist id="vendor-category-suggestions">
-            {CATEGORIES.map((c) => <option key={c} value={c} />)}
-          </datalist>
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategory(c)}
+                className={`font-mono text-[9px] uppercase tracking-wider border px-1.5 py-0.5 transition-colors ${
+                  category === c ? 'border-ink bg-ink text-paper' : 'border-rule text-ink-muted hover:border-ink hover:text-ink'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </Field>
         <Field label="Approval status">
           <Select

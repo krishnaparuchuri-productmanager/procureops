@@ -189,20 +189,41 @@ export default function AutonomyPolicyPage() {
 
       {adding && (
         <section className="border border-ink p-5 mb-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <input
               type="text"
-              list="autonomy-category-suggestions"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Category name"
               className="bg-paper border border-rule px-2 py-1.5 font-serif text-lg text-ink focus:border-ink outline-none w-full max-w-sm"
             />
-            <datalist id="autonomy-category-suggestions">
-              {categorySuggestions.filter((c) => !policies.some((p) => p.category === c)).map((c) => <option key={c} value={c} />)}
-            </datalist>
           </div>
-          <p className={`text-xs mb-4 -mt-2 ${categoryTaken ? 'text-accent' : 'text-ink-muted'}`}>
+
+          {categorySuggestions.filter((c) => !policies.some((p) => p.category === c)).length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-2">Or pick one already in use</p>
+              <div className="flex flex-wrap gap-2">
+                {categorySuggestions
+                  .filter((c) => !policies.some((p) => p.category === c))
+                  .map((c) => {
+                    const count = vendorCountFor(c)
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setNewCategory(c)}
+                        className={`font-mono text-[10px] uppercase tracking-wider border px-2 py-1 transition-colors ${
+                          newCategory === c ? 'border-ink bg-ink text-paper' : 'border-rule text-ink-muted hover:border-ink hover:text-ink'
+                        }`}
+                      >
+                        {c} &middot; {count} vendor{count === 1 ? '' : 's'}
+                      </button>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
+
+          <p className={`text-xs mb-4 ${categoryTaken ? 'text-accent' : 'text-ink-muted'}`}>
             {categoryTaken
               ? `'${newCategory.trim()}' already has a band — edit it below instead.`
               : newCategory.trim()

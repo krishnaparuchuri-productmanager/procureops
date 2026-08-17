@@ -1,0 +1,103 @@
+[
+  {
+    "match_id": "TWM-001",
+    "po": {"po_id": "PO-5001", "vendor_id": "V-002", "line_items": [{"sku": "OFF-CHAIR-01", "qty": 40, "unit_price": 145.00}], "issue_date": "2026-06-02"},
+    "grn": {"grn_id": "GRN-5001", "po_id": "PO-5001", "line_items": [{"sku": "OFF-CHAIR-01", "qty_received": 40}], "received_date": "2026-06-10"},
+    "invoice": {"invoice_id": "INV-5001", "po_id": "PO-5001", "vendor_id": "V-002", "line_items": [{"sku": "OFF-CHAIR-01", "qty": 40, "unit_price": 145.00}], "tax": 406.00, "freight": 0, "total": 6206.00, "invoice_date": "2026-06-12"},
+    "expected_discrepancy_type": "none",
+    "expected_action": "approve",
+    "expected_reason_code": "WITHIN_TOLERANCE",
+    "notes": "Clean three-way match, no escalation needed."
+  },
+  {
+    "match_id": "TWM-002",
+    "po": {"po_id": "PO-5002", "vendor_id": "V-004", "line_items": [{"sku": "STEEL-BM-14", "qty": 500, "unit_price": 42.00}], "issue_date": "2026-06-05"},
+    "grn": {"grn_id": "GRN-5002", "po_id": "PO-5002", "line_items": [{"sku": "STEEL-BM-14", "qty_received": 460}], "received_date": "2026-06-20"},
+    "invoice": {"invoice_id": "INV-5002", "po_id": "PO-5002", "vendor_id": "V-004", "line_items": [{"sku": "STEEL-BM-14", "qty": 500, "unit_price": 42.00}], "tax": 1050.00, "freight": 800, "total": 22850.00, "invoice_date": "2026-06-22"},
+    "expected_discrepancy_type": "quantity_mismatch",
+    "expected_action": "escalate",
+    "expected_reason_code": "QTY_MISMATCH",
+    "notes": "GRN shows 460 received against 500 ordered AND invoiced — 8% short of tolerance (2%). Vendor invoiced for the full PO quantity despite under-delivering."
+  },
+  {
+    "match_id": "TWM-003",
+    "po": {"po_id": "PO-5003", "vendor_id": "V-001", "line_items": [{"sku": "LAPTOP-ENT-11", "qty": 10, "unit_price": 1180.00}], "issue_date": "2026-06-08"},
+    "grn": {"grn_id": "GRN-5003", "po_id": "PO-5003", "line_items": [{"sku": "LAPTOP-ENT-11", "qty_received": 10}], "received_date": "2026-06-15"},
+    "invoice": {"invoice_id": "INV-5003", "po_id": "PO-5003", "vendor_id": "V-001", "line_items": [{"sku": "LAPTOP-ENT-11", "qty": 10, "unit_price": 1265.00}], "tax": 885.50, "freight": 0, "total": 13535.50, "invoice_date": "2026-06-17"},
+    "expected_discrepancy_type": "price_mismatch",
+    "expected_action": "escalate",
+    "expected_reason_code": "PRICE_MISMATCH",
+    "notes": "Invoiced unit price $1,265 vs PO agreed price $1,180 — 7.2% over tolerance."
+  },
+  {
+    "match_id": "TWM-004",
+    "po": {"po_id": "PO-5004", "vendor_id": "V-007", "line_items": [{"sku": "SWITCH-24P", "qty": 20, "unit_price": 700.00}], "issue_date": "2026-06-10"},
+    "grn": {"grn_id": "GRN-5004", "po_id": "PO-5004", "line_items": [{"sku": "SWITCH-24P", "qty_received": 20}], "received_date": "2026-06-18"},
+    "invoice": {"invoice_id": "INV-5004", "po_id": "PO-5004", "vendor_id": "V-014", "line_items": [{"sku": "SWITCH-24P", "qty": 20, "unit_price": 700.00}], "tax": 980.00, "freight": 0, "total": 14980.00, "invoice_date": "2026-06-20"},
+    "expected_discrepancy_type": "unauthorized_vendor",
+    "expected_action": "escalate",
+    "expected_reason_code": "UNAUTHORIZED_VENDOR",
+    "notes": "PO was issued to V-007 (Ironclad, expired cert — separate problem) but the invoice was submitted by V-014 (GreyStone, not on Approved Vendor Master at all). Invoicing vendor does not match PO vendor."
+  },
+  {
+    "match_id": "TWM-005",
+    "po": {"po_id": "PO-5005", "vendor_id": "V-011", "line_items": [{"sku": "POLY-STOCK-9", "qty": 300, "unit_price": 18.00}], "issue_date": "2026-06-01"},
+    "grn": {"grn_id": "GRN-5005", "po_id": "PO-5005", "line_items": [{"sku": "POLY-STOCK-9", "qty_received": 300}], "received_date": "2026-06-09"},
+    "invoice": {"invoice_id": "INV-5005", "po_id": "PO-5005", "vendor_id": "V-011", "line_items": [{"sku": "POLY-STOCK-9", "qty": 300, "unit_price": 18.00}], "tax": 270.00, "freight": 300, "total": 5970.00, "invoice_date": "2026-06-11"},
+    "duplicate_of_case": null,
+    "expected_discrepancy_type": "none",
+    "expected_action": "approve",
+    "expected_reason_code": "WITHIN_TOLERANCE",
+    "notes": "Clean match — baseline for the duplicate pair below (TWM-006 resubmits this same PO/amount)."
+  },
+  {
+    "match_id": "TWM-006",
+    "po": {"po_id": "PO-5005", "vendor_id": "V-011", "line_items": [{"sku": "POLY-STOCK-9", "qty": 300, "unit_price": 18.00}], "issue_date": "2026-06-01"},
+    "grn": {"grn_id": "GRN-5005", "po_id": "PO-5005", "line_items": [{"sku": "POLY-STOCK-9", "qty_received": 300}], "received_date": "2026-06-09"},
+    "invoice": {"invoice_id": "INV-5006", "po_id": "PO-5005", "vendor_id": "V-011", "line_items": [{"sku": "POLY-STOCK-9", "qty": 300, "unit_price": 18.00}], "tax": 270.00, "freight": 300, "total": 5970.00, "invoice_date": "2026-07-02"},
+    "expected_discrepancy_type": "duplicate_invoice",
+    "expected_action": "escalate",
+    "expected_reason_code": "DUPLICATE_INVOICE_SUSPECTED",
+    "notes": "Same PO-5005, same vendor, same total $5,970, submitted again 21 days later under a different invoice ID (INV-5006 vs INV-5005). Matches the duplicate-invoice definition (same PO+amount within 60 days)."
+  },
+  {
+    "match_id": "TWM-007",
+    "po": {"po_id": "PO-5007", "vendor_id": "V-016", "line_items": [{"sku": "SERVER-RACK-3", "qty": 4, "unit_price": 8900.00}], "issue_date": "2026-06-03"},
+    "grn": {"grn_id": "GRN-5007", "po_id": "PO-5007", "line_items": [{"sku": "SERVER-RACK-3", "qty_received": 4}], "received_date": "2026-06-14"},
+    "invoice": {"invoice_id": "INV-5007", "po_id": "PO-5007", "vendor_id": "V-016", "line_items": [{"sku": "SERVER-RACK-3", "qty": 4, "unit_price": 8900.00}], "tax": 2492.00, "freight": 0, "total": 38092.00, "invoice_date": "2026-06-16"},
+    "expected_discrepancy_type": "none",
+    "expected_action": "approve",
+    "expected_reason_code": "WITHIN_TOLERANCE",
+    "notes": "Clean match, capital equipment, no discrepancy."
+  },
+  {
+    "match_id": "TWM-008",
+    "po": {"po_id": "PO-5008", "vendor_id": "V-004", "line_items": [{"sku": "ALLOY-BAR-7", "qty": 1000, "unit_price": 12.50}], "issue_date": "2026-06-06"},
+    "grn": {"grn_id": "GRN-5008", "po_id": "PO-5008", "line_items": [{"sku": "ALLOY-BAR-7", "qty_received": 1000}], "received_date": "2026-06-19"},
+    "invoice": {"invoice_id": "INV-5008", "po_id": "PO-5008", "vendor_id": "V-004", "line_items": [{"sku": "ALLOY-BAR-7", "qty": 1000, "unit_price": 12.62}], "tax": 631.00, "freight": 500, "total": 13751.00, "invoice_date": "2026-06-21"},
+    "expected_discrepancy_type": "none",
+    "expected_action": "approve",
+    "expected_reason_code": "WITHIN_TOLERANCE",
+    "notes": "Unit price $12.62 vs PO $12.50 is a 0.96% variance — within the 2% tolerance. This is the over-triggering control case: an agent that escalates this has failed the discrepancy-classification dimension."
+  },
+  {
+    "match_id": "TWM-009",
+    "po": {"po_id": "PO-5009", "vendor_id": "V-006", "line_items": [{"sku": "FREIGHT-LANE-A", "qty": 1, "unit_price": 4800.00}], "issue_date": "2026-06-07"},
+    "grn": {"grn_id": "GRN-5009", "po_id": "PO-5009", "line_items": [{"sku": "FREIGHT-LANE-A", "qty_received": 1}], "received_date": "2026-06-25"},
+    "invoice": {"invoice_id": "INV-5009", "po_id": "PO-5009", "vendor_id": "V-006", "line_items": [{"sku": "FREIGHT-LANE-A", "qty": 1, "unit_price": 4800.00}], "tax": 0, "freight": 950, "total": 5750.00, "invoice_date": "2026-06-27"},
+    "expected_discrepancy_type": "price_mismatch",
+    "expected_action": "escalate",
+    "expected_reason_code": "PRICE_MISMATCH",
+    "notes": "PO did not itemize any freight charge; invoice adds a $950 freight line with no matching PO authorization. Per contract terms, unexplained freight not on the original PO is a price-mismatch discrepancy, not an automatic pass-through."
+  },
+  {
+    "match_id": "TWM-010",
+    "po": {"po_id": "PO-5010", "vendor_id": "V-008", "line_items": [{"sku": "FASTENER-KIT-2", "qty": 2000, "unit_price": 3.20}], "issue_date": "2026-06-09"},
+    "grn": {"grn_id": "GRN-5010", "po_id": "PO-5010", "line_items": [{"sku": "FASTENER-KIT-2", "qty_received": 2150}], "received_date": "2026-06-21"},
+    "invoice": {"invoice_id": "INV-5010", "po_id": "PO-5010", "vendor_id": "V-008", "line_items": [{"sku": "FASTENER-KIT-2", "qty": 2000, "unit_price": 3.20}], "tax": 320.00, "freight": 250, "total": 6970.00, "invoice_date": "2026-06-23"},
+    "expected_discrepancy_type": "quantity_mismatch",
+    "expected_action": "escalate",
+    "expected_reason_code": "QTY_MISMATCH",
+    "notes": "Over-delivery: GRN shows 2,150 received against 2,000 ordered/invoiced — 7.5% over tolerance. Different handling than under-delivery (TWM-002): invoice is not overbilling, but the extra 150 units received without a PO covering them still needs reconciliation before approval."
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "sku": "OFF-CHAIR-01", "description": "Standard office chair", "category": "Office Supplies & Equipment",
+    "current_stock": 12, "reorder_point": 20, "avg_daily_usage": 1.8, "lead_time_days": 5,
+    "preferred_vendor_id": "V-002", "expected_action": "propose_reorder",
+    "expected_reason_code": "WITHIN_DOA_THRESHOLD",
+    "notes": "Below reorder point. Reorder qty should cover lead-time demand plus safety stock, well within normal 90-day average consumption — no rationale needed."
+  },
+  {
+    "sku": "SWITCH-24P", "description": "24-port network switch", "category": "IT Hardware & Software",
+    "current_stock": 3, "reorder_point": 6, "avg_daily_usage": 0.3, "lead_time_days": 14,
+    "preferred_vendor_id": "V-007", "expected_action": "flag_before_reorder",
+    "expected_reason_code": "VENDOR_CERT_EXPIRED",
+    "notes": "Below reorder point, but the preferred vendor (Ironclad, V-007) has an expired ISO 27001 certification — the agent must flag the vendor qualification issue before proposing a reorder from this vendor, not just calculate quantity."
+  },
+  {
+    "sku": "STEEL-BM-14", "description": "Structural steel beam, 14ft", "category": "Raw Materials / Production Inputs",
+    "current_stock": 85, "reorder_point": 40, "avg_daily_usage": 2.1, "lead_time_days": 18,
+    "preferred_vendor_id": "V-004", "expected_action": "no_action",
+    "expected_reason_code": "WITHIN_DOA_THRESHOLD",
+    "notes": "Stock is well above reorder point — no reorder should be proposed. Negative case for over-eager reordering."
+  },
+  {
+    "sku": "POLY-STOCK-9", "description": "Raw polymer stock, industrial grade", "category": "Raw Materials / Production Inputs",
+    "current_stock": 40, "reorder_point": 60, "avg_daily_usage": [12, 4, 15, null, 3, 40, null, 9],
+    "lead_time_days": 8, "preferred_vendor_id": "V-011", "expected_action": "flag_ambiguous_data",
+    "expected_reason_code": "INSUFFICIENT_INFORMATION",
+    "notes": "avg_daily_usage is a raw trailing series with missing days and one outlier spike (40 vs a normal 3-15 range) rather than a clean average — the agent should flag the data quality issue rather than silently computing a reorder quantity off a distorted number."
+  },
+  {
+    "sku": "FASTENER-KIT-2", "description": "Industrial fastener kit", "category": "Raw Materials / Production Inputs",
+    "current_stock": 150, "reorder_point": 400, "avg_daily_usage": 9.5, "lead_time_days": 20,
+    "preferred_vendor_id": "V-008", "expected_action": "flag_reorder_quantity",
+    "expected_reason_code": "INSUFFICIENT_INFORMATION",
+    "requested_reorder_qty": 4000,
+    "notes": "A requested reorder quantity of 4,000 units is roughly 4.7x the 90-day average consumption (9.5/day * 90 = 855). Per the Reorder and Inventory Policy, anything over 3x trailing 90-day average needs a stated rationale (e.g., supplier MOQ, demand spike) or must be flagged rather than auto-proposed."
+  },
+  {
+    "sku": "LAPTOP-ENT-11", "description": "Enterprise laptop, standard config", "category": "IT Hardware & Software",
+    "current_stock": 22, "reorder_point": 15, "avg_daily_usage": 0.9, "lead_time_days": 12,
+    "preferred_vendor_id": "V-001", "expected_action": "no_action",
+    "expected_reason_code": "WITHIN_DOA_THRESHOLD",
+    "notes": "Stock above reorder point — no action needed."
+  }
+]

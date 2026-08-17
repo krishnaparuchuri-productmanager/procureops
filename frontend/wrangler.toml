@@ -1,0 +1,10 @@
+name = "procureops"
+compatibility_date = "2026-06-01"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+# Custom domain (procureops.krishnaparuchuri.com) is bound via the Cloudflare
+# dashboard/DNS, not here — see docs/ARCHITECTURE.md deployment notes.
+# Not yet created; confirm with Krishna before adding the DNS record.

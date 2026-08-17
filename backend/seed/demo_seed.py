@@ -1,0 +1,100 @@
+"""
+seed/demo_seed.py — Bootstrap data for ProcureOps.
+
+Idempotent: safe to call on every startup (checks for existing rows first).
+Loads:
+  1. The Approved Vendor Master (data/cases/vendors.json) into the vendors table.
+  2. Initial policy_versions rows for the Procurement Policy Manual and DOA
+     Matrix, sourced from the markdown files under data/policy/ — these are
+     the SAME files retrieval.py indexes for RAG, so the policy snapshot a
+     decision cites and the text an agent was actually grounded in are
+     guaranteed to match at seed time.
+"""
+
+from __future__ import annotations
+
+import json
+import sqlite3
+import sys
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+_DB_PATH = _BACKEND_DIR / "db" / "procureops.db"
+_DATA_DIR = _BACKEND_DIR / "data"
+
+SEEDED_BY = "Krishna Paruchuri"
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _connect() -> sqlite3.Connection:
+    conn = sqlite3.connect(_DB_PATH)
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
+
+
+def seed_vendors(conn: sqlite3.Connection) -> int:
+    existing = conn.execute("SELECT COUNT(*) FROM vendors").fetchone()[0]
+    if existing > 0:
+        return 0
+
+    vendors_path = _DATA_DIR / "cases" / "vendors.json"
+    vendors = json.loads(vendors_path.read_text(encoding="utf-8"))
+    for v in vendors:
+        conn.execute(
+            "INSERT INTO vendors (vendor_id, name, category, approval_status, certifications, "
+            "on_time_pct, defect_rate_pct, note) VALUES (?,?,?,?,?,?,?,?)",
+            (v["vendor_id"], v["name"], v["category"], v["approval_status"],
+             json.dumps(v.get("certifications", [])), v.get("on_time_pct"),
+             v.get("defect_rate_pct"), v.get("note")),
+        )
+    return len(vendors)
+
+
+def seed_policy_versions(conn: sqlite3.Connection) -> int:
+    existing = conn.execute("SELECT COUNT(*) FROM policy_versions").fetchone()[0]
+    if existing > 0:
+        return 0
+
+    docs = [
+        ("procurement_policy_manual", "data/policy/procurement_policy_manual.md", "2026-06-01"),
+        ("doa_matrix",                "data/policy/doa_matrix.md",                "2026-06-01"),
+    ]
+    now = _now()
+    count = 0
+    for doc_type, rel_path, version in docs:
+        content = (_BACKEND_DIR / rel_path).read_text(encoding="utf-8")
+        conn.execute(
+            "INSERT INTO policy_versions (id, doc_type, version, content, effective_at, "
+            "superseded_at, created_by, created_at) VALUES (?,?,?,?,?,NULL,?,?)",
+            (str(uuid.uuid4()), doc_type, version, content, now, SEEDED_BY, now),
+        )
+        count += 1
+    return count
+
+
+def seed_demo_data() -> None:
+    conn = _connect()
+    try:
+        with conn:
+            vendor_count = seed_vendors(conn)
+            policy_count = seed_policy_versions(conn)
+        if vendor_count or policy_count:
+            print(f"[seed] Loaded {vendor_count} vendors, {policy_count} policy_versions rows.")
+        else:
+            print("[seed] Data already present — skipping.")
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.path.insert(0, str(_BACKEND_DIR))
+    from db.init_db import init_db
+    init_db()
+    seed_demo_data()

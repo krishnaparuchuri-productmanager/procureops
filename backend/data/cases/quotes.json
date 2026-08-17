@@ -1,0 +1,73 @@
+[
+  {
+    "sourcing_case_id": "SRC-001",
+    "requisition_id": "REQ-101",
+    "description": "50 enterprise laptops for the engineering org refresh.",
+    "category": "IT Hardware & Software",
+    "quotes": [
+      {"vendor_id": "V-001", "unit_price": 1180, "qty": 50, "tax_pct": 7.0, "freight_flat": 900, "duty_flat": 0, "lead_time_days": 12},
+      {"vendor_id": "V-016", "unit_price": 1210, "qty": 50, "tax_pct": 7.0, "freight_flat": 300, "duty_flat": 0, "lead_time_days": 9},
+      {"vendor_id": "V-007", "unit_price": 1150, "qty": 50, "tax_pct": 7.0, "freight_flat": 1100, "duty_flat": 0, "lead_time_days": 14}
+    ],
+    "expected_note": "Headline price ranks V-007 lowest, but V-007's ISO 27001 is expired so it must be excluded from consideration entirely, not just re-ranked. Between the remaining two, V-016's lower freight gives it the lowest total landed cost despite a higher unit price than V-001."
+  },
+  {
+    "sourcing_case_id": "SRC-002",
+    "requisition_id": "REQ-102",
+    "description": "12-month facilities maintenance contract, three competing bids.",
+    "category": "Facilities & Maintenance",
+    "quotes": [
+      {"vendor_id": "V-005", "unit_price": 2400, "qty": 12, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 5},
+      {"vendor_id": "V-013", "unit_price": 2350, "qty": 12, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 6}
+    ],
+    "expected_note": "Only two quotes gathered but this is a $28,200-$28,800 requisition, which is at or above the $10,000 competitive-bidding threshold requiring three quotes. Missing a third quote is itself a policy gap that must be flagged before a recommendation is made."
+  },
+  {
+    "sourcing_case_id": "SRC-003",
+    "requisition_id": "REQ-103",
+    "description": "Raw steel components, 2,000 units, three vendor quotes.",
+    "category": "Raw Materials / Production Inputs",
+    "quotes": [
+      {"vendor_id": "V-004", "unit_price": 42.50, "qty": 2000, "tax_pct": 5.0, "freight_flat": 4200, "duty_flat": 1800, "lead_time_days": 18},
+      {"vendor_id": "V-008", "unit_price": 41.00, "qty": 2000, "tax_pct": 5.0, "freight_flat": 3900, "duty_flat": 1800, "lead_time_days": 20},
+      {"vendor_id": "V-011", "unit_price": 43.00, "qty": 2000, "tax_pct": 5.0, "freight_flat": 3600, "duty_flat": 1500, "lead_time_days": 16}
+    ],
+    "expected_note": "V-008 has the lowest unit price and lowest total landed cost, but its ISO 9001 expires 2026-09-05 — within days of this sourcing decision. This is a near-expiry, not an expiry, so it does not disqualify V-008, but it must be flagged as a condition of award (renewal confirmation required before PO issuance)."
+  },
+  {
+    "sourcing_case_id": "SRC-004",
+    "requisition_id": "REQ-104",
+    "description": "Professional services engagement for vendor management advisory, three quotes.",
+    "category": "Professional Services",
+    "quotes": [
+      {"vendor_id": "V-003", "unit_price": 185, "qty": 120, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 10},
+      {"vendor_id": "V-009", "unit_price": 190, "qty": 120, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 8},
+      {"vendor_id": "V-015", "unit_price": 205, "qty": 120, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 12}
+    ],
+    "expected_note": "V-003 has the clear lowest total landed cost with no tax/freight/duty complications (services engagement). This is the vendor-neutrality control case: a correct agent selects V-003 on the numbers, not V-015 despite V-015 having been used in two of the last three engagements from this department."
+  },
+  {
+    "sourcing_case_id": "SRC-005",
+    "requisition_id": "REQ-105",
+    "description": "Freight forwarding contract for a new distribution lane, three quotes.",
+    "category": "Logistics & Freight",
+    "quotes": [
+      {"vendor_id": "V-006", "unit_price": 1450, "qty": 24, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 4},
+      {"vendor_id": "V-012", "unit_price": 1420, "qty": 24, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 3},
+      {"vendor_id": "V-014", "unit_price": 1180, "qty": 24, "tax_pct": 0, "freight_flat": 0, "duty_flat": 0, "lead_time_days": 5}
+    ],
+    "expected_note": "V-014 (GreyStone Hardware Traders) is not actually a logistics vendor and is not on the Approved Vendor Master at all — this quote should never have been solicited and must be excluded/flagged, not just out-priced honestly. Between the two valid quotes, V-012 has the lower total landed cost."
+  },
+  {
+    "sourcing_case_id": "SRC-006",
+    "requisition_id": "REQ-106",
+    "description": "Large IT hardware refresh, $220,000 estimated, three quotes.",
+    "category": "IT Hardware & Software",
+    "quotes": [
+      {"vendor_id": "V-001", "unit_price": 2150, "qty": 100, "tax_pct": 7.0, "freight_flat": 3500, "duty_flat": 0, "lead_time_days": 21},
+      {"vendor_id": "V-016", "unit_price": 2095, "qty": 100, "tax_pct": 7.0, "freight_flat": 2800, "duty_flat": 0, "lead_time_days": 18},
+      {"vendor_id": "V-002", "unit_price": 2300, "qty": 100, "tax_pct": 7.0, "freight_flat": 1000, "duty_flat": 0, "lead_time_days": 25}
+    ],
+    "expected_note": "V-016 has the lowest total landed cost. Regardless of which vendor is recommended, at ~$220,000-$246,000 this exceeds the $75,000 IT Hardware VP ceiling and requires CFO/CEO approval — the sourcing recommendation and the DOA escalation are two separate governance findings that must both surface."
+  }
+]

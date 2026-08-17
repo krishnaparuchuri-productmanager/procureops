@@ -11,6 +11,11 @@ from __future__ import annotations
 
 from typing import Any
 
+try:
+    from retrieval import search_docs, get_doc_chunks
+except ImportError:
+    from backend.retrieval import search_docs, get_doc_chunks
+
 REASON_CODES = [
     "WITHIN_DOA_THRESHOLD",
     "EXCEEDS_DOA_THRESHOLD",
@@ -48,6 +53,31 @@ def format_chunks(chunks: list[dict], label: str) -> str:
         lines.append(f"\n### [{c['chunk_id']}] {c['section_title']} (source: {c['source_file']})")
         lines.append(c["text"])
     return "\n".join(lines)
+
+
+def vendor_profile_chunks(vendor_ref: str, known_id: bool = False) -> list[dict]:
+    """Return the FULL profile (all sections) for one vendor, never a partial
+    top-k slice. If known_id=True, vendor_ref is treated as an exact vendor_id
+    prefix (e.g. "V-001") and matched directly. Otherwise vendor_ref is free
+    text (e.g. a vendor name mentioned in a requisition) — the top TF-IDF hit
+    identifies which vendor doc to fetch in full."""
+    if known_id:
+        chunks = get_doc_chunks(vendor_ref, corpus="vendor_master")
+        if chunks:
+            return chunks
+    hits = search_docs(vendor_ref, top_k=1, corpus="vendor_master")
+    if not hits:
+        return []
+    return get_doc_chunks(hits[0]["doc_id"], corpus="vendor_master")
+
+
+def full_doa_matrix_chunks() -> list[dict]:
+    """The DOA Matrix is short (~9 sections) and always relevant regardless of
+    a requisition's wording — TF-IDF top-k against it was losing the exact
+    category section to unrelated sections when the requisition's free text
+    didn't share vocabulary with the category header. Returning the whole
+    document sidesteps that instead of trying to out-guess the query."""
+    return get_doc_chunks("doa_matrix", corpus="doa_matrix")
 
 
 def safe_escalate_fallback(extra: dict[str, Any] | None = None) -> dict[str, Any]:

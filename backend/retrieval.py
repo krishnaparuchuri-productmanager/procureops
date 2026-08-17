@@ -199,5 +199,21 @@ def search_docs(query: str, top_k: int = 3, corpus: Optional[str] = None) -> Lis
     return [r.as_dict() for r in index.search(query, top_k=top_k, corpus=corpus)]
 
 
+def get_doc_chunks(doc_id_prefix: str, corpus: Optional[str] = None) -> List[dict]:
+    """Return every chunk whose doc_id starts with doc_id_prefix (e.g. a vendor_id
+    like "V-001", which is a prefix of every vendor's doc_id "V-001-<slug>").
+
+    Used once a specific document is already identified (by vendor_id, or by
+    the top hit of a prior search_docs call) to fetch its full text instead of
+    letting individual sections compete for a shared top_k slot against every
+    other document in the corpus. A vendor's Certifications section losing out
+    to a different vendor's Preamble in a global top-k ranking was a real bug
+    found while testing ProcureOps live — this is the fix."""
+    index = _get_index()
+    matches = [c for c in index.chunks
+               if c.doc_id.startswith(doc_id_prefix) and (corpus is None or c.corpus == corpus)]
+    return [c.as_dict() for c in matches]
+
+
 def get_all_chunks() -> List[dict]:
     return [c.as_dict() for c in _get_index().chunks]

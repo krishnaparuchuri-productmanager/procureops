@@ -259,7 +259,7 @@ def save_results(results: list[EvalResult], db_path: Path = _DB_PATH) -> None:
                 conn.execute(
                     f"""INSERT INTO eval_results
                         (id, case_id, run_id, model_tag, {", ".join(DIMENSIONS)}, avg_score, overall_pass, notes, created_at)
-                        VALUES ({", ".join(["?"] * (4 + len(DIMENSIONS) + 3))})""",
+                        VALUES ({", ".join(["?"] * (4 + len(DIMENSIONS) + 4))})""",
                     (str(uuid.uuid4()), r.case_id, r.run_id, r.model_tag,
                      *[r.scores[d] for d in DIMENSIONS],
                      r.avg_score, r.overall_pass, r.notes, r.created_at),

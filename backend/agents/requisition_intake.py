@@ -15,11 +15,11 @@ from typing import Any
 try:
     from llm_client import call_haiku
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
 except ImportError:
     from backend.llm_client import call_haiku
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Requisition Intake specialist. You parse a free-text \
 purchase request and validate it against the DOA Matrix and vendor qualification rules supplied \
@@ -71,15 +71,22 @@ REQUISITION_TOOL: dict[str, Any] = {
 
 def assess_requisition(raw_text: str) -> tuple[dict[str, Any], list[dict]]:
     """Run the Requisition Intake pipeline. Returns (assessment_dict, retrieved_chunks)."""
-    doa_chunks = search_docs(raw_text, top_k=3, corpus="doa_matrix")
+    # DOA Matrix is fetched whole (see full_doa_matrix_chunks docstring) rather
+    # than top-k'd against raw_text, which loses the right category section
+    # when a requisition's wording (e.g. "laptops") shares no vocabulary with
+    # the DOA table's category headers and dollar thresholds.
+    doa_chunks = full_doa_matrix_chunks()
     policy_chunks = search_docs(raw_text, top_k=2, corpus="procurement_policy_manual")
-    vendor_chunks = search_docs(raw_text, top_k=2, corpus="vendor_master")
+    # Full vendor profile for whichever vendor the free text most resembles,
+    # not a top-k slice that can lose the Certifications section to a
+    # different vendor's Preamble competing in the same global ranking.
+    vendor_chunks = vendor_profile_chunks(raw_text, known_id=False)
     chunks = doa_chunks + policy_chunks + vendor_chunks
 
     context = "\n\n".join([
-        format_chunks(doa_chunks, "DOA Matrix — relevant sections"),
+        format_chunks(doa_chunks, "DOA Matrix — full document"),
         format_chunks(policy_chunks, "Procurement Policy Manual — relevant sections"),
-        format_chunks(vendor_chunks, "Vendor Master — relevant profiles"),
+        format_chunks(vendor_chunks, "Vendor Master — full profile of the most likely vendor mentioned"),
     ])
     user_message = f"## Requisition Request\n{raw_text}\n\n{context}"
 

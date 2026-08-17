@@ -1,4 +1,9 @@
-const BASE = '/api'
+// In dev, Vite proxies '/api' to localhost:8000 (see vite.config.js), so the
+// relative path works. In production there's no backend behind the Pages
+// domain, so VITE_API_URL must point at the deployed Railway backend
+// (e.g. https://procureops-backend-production.up.railway.app/api) — set as
+// a build-time env var in the Cloudflare Pages project settings.
+const BASE = import.meta.env.VITE_API_URL || '/api'
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {

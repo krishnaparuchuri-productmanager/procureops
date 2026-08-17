@@ -16,11 +16,11 @@ from typing import Any
 try:
     from llm_client import call_sonnet
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
 except ImportError:
     from backend.llm_client import call_sonnet
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks, full_doa_matrix_chunks
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Sourcing / Quote Comparison specialist. You compare \
 competing vendor quotes and RECOMMEND a vendor — you never select or approve one; every \
@@ -90,19 +90,21 @@ SOURCING_TOOL: dict[str, Any] = {
 def assess_sourcing(description: str, category: str, quotes: list[dict], current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict]]:
     """Run the Sourcing pipeline. Returns (recommendation_dict, retrieved_chunks). Never auto-clears."""
     policy_chunks = search_docs(f"{category} competitive bidding vendor neutrality", top_k=2, corpus="procurement_policy_manual")
-    doa_chunks = search_docs(category, top_k=2, corpus="doa_matrix")
+    doa_chunks = full_doa_matrix_chunks()
     terms_chunks = search_docs("freight duty incoterms", top_k=2, corpus="contract_terms")
     vendor_ids = [q["vendor_id"] for q in quotes]
     vendor_chunks = []
     for vid in vendor_ids:
-        vendor_chunks += search_docs(vid, top_k=1, corpus="vendor_master")
+        # Full profile per quoted vendor (known vendor_id -> direct doc match),
+        # not a single top-k chunk that can miss the Certifications section.
+        vendor_chunks += vendor_profile_chunks(vid, known_id=True)
     chunks = policy_chunks + doa_chunks + terms_chunks + vendor_chunks
 
     context = "\n\n".join([
         format_chunks(policy_chunks, "Procurement Policy Manual — relevant sections"),
-        format_chunks(doa_chunks, "DOA Matrix — relevant sections"),
+        format_chunks(doa_chunks, "DOA Matrix — full document"),
         format_chunks(terms_chunks, "Standard Contract Terms — relevant sections"),
-        format_chunks(vendor_chunks, "Vendor Master — quoted vendor profiles"),
+        format_chunks(vendor_chunks, "Vendor Master — full profiles of every quoted vendor"),
     ])
     user_message = (
         f"## Sourcing Case\nCategory: {category}\nDescription: {description}\n"

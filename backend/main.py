@@ -54,6 +54,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:5174",
     "http://localhost:3000",
     "https://procureops.krishnaparuchuri.com",
+    "https://procureops.krishna1parchuri.workers.dev",
 ]
 
 app.add_middleware(

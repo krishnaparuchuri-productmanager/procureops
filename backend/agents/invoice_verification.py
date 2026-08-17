@@ -15,11 +15,11 @@ from typing import Any
 try:
     from llm_client import call_sonnet
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
 except ImportError:
     from backend.llm_client import call_sonnet
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Invoice Verification specialist. You perform a \
 three-way match between a Purchase Order, a Goods Receipt Note, and an Invoice, and produce a \
@@ -73,8 +73,14 @@ INVOICE_TOOL: dict[str, Any] = {
 def assess_invoice(po: dict, grn: dict, invoice: dict, prior_invoices: list[dict] | None = None) -> tuple[dict[str, Any], list[dict]]:
     """Run the Invoice Verification pipeline. Returns (verdict_dict, retrieved_chunks). Never auto-clears."""
     policy_chunks = search_docs("three-way match tolerance duplicate invoice unauthorized vendor", top_k=3, corpus="procurement_policy_manual")
-    vendor_chunks = search_docs(invoice.get("vendor_id", ""), top_k=1, corpus="vendor_master")
-    vendor_chunks += search_docs(po.get("vendor_id", ""), top_k=1, corpus="vendor_master")
+    # Full profile for both the PO's vendor and the invoice's vendor (known
+    # vendor_ids) — these can legitimately differ, which is exactly the
+    # unauthorized_vendor case this specialist has to catch, so both need
+    # full grounding, not a single top-k chunk each.
+    vendor_ids = {v for v in (invoice.get("vendor_id"), po.get("vendor_id")) if v}
+    vendor_chunks = []
+    for vid in vendor_ids:
+        vendor_chunks += vendor_profile_chunks(vid, known_id=True)
     chunks = policy_chunks + vendor_chunks
 
     context = "\n\n".join([

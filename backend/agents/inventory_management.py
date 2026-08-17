@@ -17,11 +17,11 @@ from typing import Any
 try:
     from llm_client import call_haiku
     from retrieval import search_docs
-    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
 except ImportError:
     from backend.llm_client import call_haiku
     from backend.retrieval import search_docs
-    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback
+    from backend.agents.common import REASON_CODES, format_chunks, safe_escalate_fallback, vendor_profile_chunks
 
 SYSTEM_PROMPT = f"""You are the ProcureOps Inventory Management specialist. You monitor stock \
 levels and PROPOSE reorder points and quantities. You never generate or transmit an actual \
@@ -68,7 +68,9 @@ INVENTORY_TOOL: dict[str, Any] = {
 def assess_inventory(sku_record: dict, current_date: str = "2026-08-17") -> tuple[dict[str, Any], list[dict]]:
     """Run the Inventory Management pipeline. Returns (assessment_dict, retrieved_chunks)."""
     vendor_id = sku_record.get("preferred_vendor_id", "")
-    vendor_chunks = search_docs(vendor_id, top_k=1, corpus="vendor_master")
+    # Full profile (known vendor_id) so the Certifications section is always
+    # present, not just whichever chunk happened to rank in a top-k slice.
+    vendor_chunks = vendor_profile_chunks(vendor_id, known_id=True) if vendor_id else []
     policy_chunks = search_docs("reorder quantity inventory policy", top_k=2, corpus="procurement_policy_manual")
     chunks = vendor_chunks + policy_chunks
 

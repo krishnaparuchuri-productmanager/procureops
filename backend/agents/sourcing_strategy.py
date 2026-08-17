@@ -13,6 +13,7 @@ further from money actually leaving the company.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 try:
@@ -169,4 +170,16 @@ def assess_sourcing_strategy(
             "auction_recommendation": {"mechanism": "not_applicable", "rationale": "N/A - system error", "tradeoffs": []},
         }), chunks, usage_dict(SONNET_MODEL, response)
 
-    return response.parsed(), chunks, usage_dict(SONNET_MODEL, response)
+    result = response.parsed()
+    # Claude occasionally emits a nested object field as a JSON-encoded string
+    # rather than true nested JSON when the schema has a deeply nested object
+    # (observed intermittently for this field specifically) -- normalize so
+    # callers always get a real dict regardless of that formatting quirk.
+    auction = result.get("auction_recommendation")
+    if isinstance(auction, str):
+        try:
+            result["auction_recommendation"] = json.loads(auction)
+        except (json.JSONDecodeError, TypeError):
+            result["auction_recommendation"] = {"mechanism": "not_applicable", "rationale": auction, "tradeoffs": []}
+
+    return result, chunks, usage_dict(SONNET_MODEL, response)

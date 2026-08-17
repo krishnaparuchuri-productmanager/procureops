@@ -6,6 +6,7 @@ import SourcingForm from '../components/forms/SourcingForm.jsx'
 import SourcingStrategyForm from '../components/forms/SourcingStrategyForm.jsx'
 import InvoiceForm from '../components/forms/InvoiceForm.jsx'
 import InventoryForm from '../components/forms/InventoryForm.jsx'
+import ContractRenewalForm from '../components/forms/ContractRenewalForm.jsx'
 import DecisionCard from '../components/DecisionCard.jsx'
 import AskProcureOps from '../components/AskProcureOps.jsx'
 
@@ -15,6 +16,7 @@ const TABS = [
   { key: 'sourcing', label: 'Sourcing / Quote Comparison', source: 'an RFQ tool or vendor portal', decisionType: 'vendor_selection' },
   { key: 'invoice', label: 'Invoice Verification', source: 'the ERP and vendor AP systems', decisionType: 'invoice_verdict' },
   { key: 'inventory', label: 'Inventory Management', source: 'the warehouse management system', decisionType: 'reorder_action' },
+  { key: 'contract_renewal', label: 'Contract Renewal', source: 'a contract expiry calendar', decisionType: 'contract_renewal' },
 ]
 
 const TAB_KEYS = TABS.map((t) => t.key)
@@ -67,6 +69,7 @@ export default function NewRequestPage() {
       if (tab === 'sourcing') res = await api.proposeSourcing({ sourcing_case_id: `SRC-${Date.now()}`, ...body })
       if (tab === 'invoice') res = await api.proposeInvoice(body)
       if (tab === 'inventory') res = await api.proposeInventory(body)
+      if (tab === 'contract_renewal') res = await api.proposeContractRenewal(body)
       setResult(res)
     } catch (e) {
       setError(e.message)
@@ -120,6 +123,9 @@ export default function NewRequestPage() {
       )}
       {tab === 'inventory' && (
         <InventoryForm key={handoffKey} vendors={vendors} onSubmit={submit} submitting={submitting} extractedFields={handoffFields} />
+      )}
+      {tab === 'contract_renewal' && (
+        <ContractRenewalForm vendors={vendors} onSubmit={submit} submitting={submitting} />
       )}
 
       {error && <p className="text-accent text-sm mt-4 font-mono">{error}</p>}

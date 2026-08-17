@@ -182,6 +182,27 @@ CREATE TABLE IF NOT EXISTS negotiation_history (
 );
 """
 
+# ---------------------------------------------------------------------------
+# autonomy_policy — company-configurable bounds for bounded-autonomy contract
+# renewal, one row per category. These are the ONLY numbers that ever let a
+# renewal auto-clear -- deliberately evaluated as plain code (see
+# agents/autonomy_rules.py), never by an LLM. Mutable by design (a company
+# tunes these occasionally); every change still writes an audit_log row via
+# the route, so who-changed-what-when stays traceable without a second
+# full versioning system layered on top of policy_versions.
+# ---------------------------------------------------------------------------
+CREATE_AUTONOMY_POLICY_TABLE = """
+CREATE TABLE IF NOT EXISTS autonomy_policy (
+    category                    TEXT    PRIMARY KEY,
+    max_renewal_value_usd       REAL    NOT NULL,
+    min_vendor_on_time_pct      REAL    NOT NULL,
+    max_vendor_defect_rate_pct  REAL    NOT NULL,
+    max_price_increase_pct      REAL    NOT NULL,
+    updated_by                  TEXT    NOT NULL,
+    updated_at                  TEXT    NOT NULL
+);
+"""
+
 ALL_TABLES = [
     ("vendors",             CREATE_VENDORS_TABLE),
     ("policy_versions",     CREATE_POLICY_VERSIONS_TABLE),
@@ -191,4 +212,5 @@ ALL_TABLES = [
     ("eval_results",        CREATE_EVAL_RESULTS_TABLE),
     ("policy_drift_flags",  CREATE_POLICY_DRIFT_FLAGS_TABLE),
     ("negotiation_history", CREATE_NEGOTIATION_HISTORY_TABLE),
+    ("autonomy_policy",     CREATE_AUTONOMY_POLICY_TABLE),
 ]

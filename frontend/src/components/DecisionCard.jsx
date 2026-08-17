@@ -71,6 +71,22 @@ function Headline({ decisionType, proposal, vendors }) {
       </div>
     )
   }
+  if (decisionType === 'contract_renewal') {
+    const passed = proposal.rule_check?.passed
+    const increasePct = proposal.current_annual_value_usd
+      ? ((proposal.proposed_annual_value_usd - proposal.current_annual_value_usd) / proposal.current_annual_value_usd) * 100
+      : null
+    return (
+      <div>
+        <h3 className="text-2xl mb-1">{passed ? 'Cleared automatically' : 'Requires human review'}</h3>
+        <p className="text-sm text-ink-muted">
+          {vendorLabel(proposal.vendor_id, vendors)} · ${Number(proposal.current_annual_value_usd).toLocaleString()}
+          {' → '}${Number(proposal.proposed_annual_value_usd).toLocaleString()}
+          {increasePct != null && ` (${increasePct >= 0 ? '+' : ''}${increasePct.toFixed(1)}%)`}
+        </p>
+      </div>
+    )
+  }
   return <h3 className="text-2xl mb-1">{decisionType}</h3>
 }
 
@@ -129,6 +145,54 @@ function SpecialistDetail({ decisionType, proposal, vendors }) {
         <dt className="text-ink-muted">Vendor</dt><dd>{proposal.vendor_id ? vendorLabel(proposal.vendor_id, vendors) : '—'}</dd>
         <dt className="text-ink-muted">Cost center</dt><dd>{proposal.cost_center || '—'}</dd>
       </dl>
+    )
+  }
+  if (decisionType === 'contract_renewal') {
+    const checks = proposal.rule_check?.checks || []
+    const RESULT_STYLE = {
+      passed: 'text-ink border-ink',
+      failed: 'text-accent border-accent',
+      not_applicable: 'text-ink-muted border-rule',
+    }
+    const RESULT_MARK = { passed: '✓', failed: '✗', not_applicable: '–' }
+    return (
+      <div>
+        <div className="mb-4">
+          <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-2">
+            Bounded-autonomy rule check — {proposal.rule_check?.reason_code}
+          </p>
+          <div className="grid gap-1.5">
+            {checks.map((c) => (
+              <div key={c.name} className="flex items-start gap-2.5 text-sm">
+                <span className={`flex-shrink-0 w-4 h-4 flex items-center justify-center font-mono text-[10px] border rounded-full mt-0.5 ${RESULT_STYLE[c.result]}`}>
+                  {RESULT_MARK[c.result]}
+                </span>
+                <span className={c.result === 'failed' ? 'text-accent' : ''}>{c.detail}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {proposal.key_terms_assessment && (
+          <div className="mb-3">
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">Terms assessment</p>
+            <p className="text-sm">{proposal.key_terms_assessment}</p>
+          </div>
+        )}
+        {proposal.risk_notes && (
+          <div className="mb-3">
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">Risk notes</p>
+            <p className="text-sm">{proposal.risk_notes}</p>
+          </div>
+        )}
+        {proposal.recommended_negotiation_points?.length > 0 && (
+          <div>
+            <p className="text-xs font-mono uppercase tracking-wide text-ink-muted mb-1">Worth raising before signing</p>
+            <ul className="text-sm list-disc list-inside space-y-0.5">
+              {proposal.recommended_negotiation_points.map((p, i) => <li key={i}>{p}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
     )
   }
   if (decisionType === 'sourcing_strategy') {

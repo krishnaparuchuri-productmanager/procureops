@@ -48,10 +48,17 @@ export const api = {
   proposeNegotiationBrief: (body) =>
     request('/negotiation-brief', { method: 'POST', body: JSON.stringify(body) }),
 
+  proposeContractRenewal: (body) =>
+    request('/decisions/contract-renewal', { method: 'POST', body: JSON.stringify(body) }),
+
   listVendors: () => request('/vendors'),
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),
   getPolicyVersions: (docType) => request(`/policy/versions/${docType}`),
   getTraces: (limit = 50) => request(`/traces?limit=${limit}`),
   getNotifications: () => request('/notifications'),
+
+  listAutonomyPolicy: () => request('/autonomy-policy'),
+  updateAutonomyPolicy: (category, body) =>
+    request(`/autonomy-policy/${encodeURIComponent(category)}`, { method: 'PUT', body: JSON.stringify(body) }),
 }

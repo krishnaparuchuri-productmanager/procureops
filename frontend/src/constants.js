@@ -17,6 +17,7 @@ export const AGENTS = {
   'procureops-invoice-verification': { label: 'Invoice Verification', model: 'Sonnet', tier: 'sonnet' },
   'procureops-inventory-management': { label: 'Inventory Management', model: 'Haiku', tier: 'haiku' },
   'procureops-negotiation-brief': { label: 'Negotiation Brief', model: 'Sonnet', tier: 'sonnet' },
+  'procureops-contract-renewal': { label: 'Contract Renewal', model: 'Sonnet', tier: 'sonnet' },
 }
 
 export const DECISION_TYPE_LABELS = {
@@ -25,6 +26,7 @@ export const DECISION_TYPE_LABELS = {
   requisition_intake: 'Requisition Intake',
   reorder_action: 'Reorder Action',
   sourcing_strategy: 'Sourcing Strategy',
+  contract_renewal: 'Contract Renewal',
 }
 
 export const CORPUS_LABELS = {

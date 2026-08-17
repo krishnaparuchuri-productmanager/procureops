@@ -39,6 +39,8 @@ try:
     from agents.sourcing_strategy import assess_sourcing_strategy
     from agents.invoice_verification import assess_invoice
     from agents.inventory_management import assess_inventory
+    from agents.contract_renewal import assess_contract_renewal
+    from agents.autonomy_rules import evaluate_renewal
     from agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from observability.audit import write_audit
     from routes.policy import get_active_version, _connect as _policy_connect
@@ -49,6 +51,8 @@ except ImportError:
     from backend.agents.sourcing_strategy import assess_sourcing_strategy
     from backend.agents.invoice_verification import assess_invoice
     from backend.agents.inventory_management import assess_inventory
+    from backend.agents.contract_renewal import assess_contract_renewal
+    from backend.agents.autonomy_rules import evaluate_renewal
     from backend.agents.common import AGENT_IDS, PROD_CRITICAL_DECISION_TYPES
     from backend.observability.audit import write_audit
     from backend.routes.policy import get_active_version, _connect as _policy_connect
@@ -170,6 +174,15 @@ class InventoryRequest(BaseModel):
     sku_record: dict
 
 
+class ContractRenewalRequest(BaseModel):
+    vendor_id: str
+    category: str
+    current_annual_value_usd: float
+    proposed_annual_value_usd: float
+    context_description: str
+    renewal_id: Optional[str] = None
+
+
 class ReviewDecision(BaseModel):
     reviewed_by: str
     decision: str  # "approved" | "rejected"
@@ -288,6 +301,49 @@ def propose_inventory(body: InventoryRequest):
                 assessment.get("reason_code", "INSUFFICIENT_INFORMATION"), auto_cleared, trace_id,
             )
         return {"decision_id": decision_id, "assessment": assessment, "sources": chunks,
+                "usage": usage, "agent_id": agent_id}
+    finally:
+        conn.close()
+
+
+@router.post("/decisions/contract-renewal", status_code=201)
+def propose_contract_renewal(body: ContractRenewalRequest):
+    agent_id = AGENT_IDS["contract_renewal"]
+    conn = _connect()
+    try:
+        vendor_row = conn.execute(
+            "SELECT * FROM vendors WHERE vendor_id=?", (body.vendor_id,)
+        ).fetchone()
+        if not vendor_row:
+            raise HTTPException(404, f"Vendor '{body.vendor_id}' not found")
+        vendor = dict(vendor_row)
+
+        # The rule engine runs FIRST and is the sole source of auto_cleared —
+        # the LLM below is handed this result so its commentary can reference
+        # it, never the other way around. See agents/autonomy_rules.py.
+        rule_result = evaluate_renewal(
+            body.category, vendor, body.current_annual_value_usd, body.proposed_annual_value_usd,
+        )
+        assessment, chunks, usage = assess_contract_renewal(
+            body.vendor_id, body.category, body.current_annual_value_usd,
+            body.proposed_annual_value_usd, body.context_description, rule_result,
+        )
+
+        proposal = {**assessment, "rule_check": rule_result,
+                    "current_annual_value_usd": body.current_annual_value_usd,
+                    "proposed_annual_value_usd": body.proposed_annual_value_usd,
+                    "vendor_id": body.vendor_id}
+        entity_ref = body.renewal_id or f"RENEW-{body.vendor_id}-{uuid.uuid4().hex[:8]}"
+
+        with conn:
+            trace_id = _log_trace(conn, agent_id, body.context_description, chunks, proposal, usage)
+            # auto_cleared comes exclusively from the rule engine's verdict —
+            # never from anything the LLM specialist said about itself.
+            decision_id = _create_decision(
+                conn, "contract_renewal", entity_ref, agent_id, proposal,
+                rule_result["reason_code"], rule_result["passed"], trace_id,
+            )
+        return {"decision_id": decision_id, "assessment": proposal, "sources": chunks,
                 "usage": usage, "agent_id": agent_id}
     finally:
         conn.close()

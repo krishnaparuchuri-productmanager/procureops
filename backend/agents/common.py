@@ -29,6 +29,8 @@ REASON_CODES = [
     "WITHIN_TOLERANCE",
     "MANUAL_OVERRIDE",
     "INSUFFICIENT_INFORMATION",
+    "WITHIN_AUTO_APPROVAL_BAND",
+    "EXCEEDS_AUTO_APPROVAL_BAND",
 ]
 
 AGENT_IDS = {
@@ -39,6 +41,7 @@ AGENT_IDS = {
     "invoice_verification": "procureops-invoice-verification",
     "inventory_management": "procureops-inventory-management",
     "negotiation_brief":   "procureops-negotiation-brief",
+    "contract_renewal":    "procureops-contract-renewal",
 }
 
 # All valid decision_reviews.decision_type values — validated here (Pydantic
@@ -48,7 +51,7 @@ AGENT_IDS = {
 # CHECK this replaced.
 DECISION_TYPES = [
     "requisition_intake", "vendor_selection", "invoice_verdict",
-    "reorder_action", "sourcing_strategy",
+    "reorder_action", "sourcing_strategy", "contract_renewal",
 ]
 
 # Decision types that are ALWAYS human-gated — no auto_cleared path exists

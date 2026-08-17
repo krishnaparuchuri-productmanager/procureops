@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { to: '/decisions', label: 'Decisions' },
   { to: '/new', label: 'Simulate Request' },
   { to: '/negotiation', label: 'Negotiation Brief' },
+  { to: '/autonomy-policy', label: 'Autonomy Config' },
   { to: '/activity', label: 'Agent Activity' },
   { to: '/vendors', label: 'Vendors' },
   { to: '/policy', label: 'Policy' },

@@ -9,6 +9,7 @@ import PolicyPage from './pages/PolicyPage.jsx'
 import AuditLogPage from './pages/AuditLogPage.jsx'
 import AgentActivityPage from './pages/AgentActivityPage.jsx'
 import NegotiationBriefPage from './pages/NegotiationBriefPage.jsx'
+import AutonomyPolicyPage from './pages/AutonomyPolicyPage.jsx'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/audit" element={<AuditLogPage />} />
           <Route path="/activity" element={<AgentActivityPage />} />
           <Route path="/negotiation" element={<NegotiationBriefPage />} />
+          <Route path="/autonomy-policy" element={<AutonomyPolicyPage />} />
         </Routes>
       </main>
       <footer className="border-t border-rule">

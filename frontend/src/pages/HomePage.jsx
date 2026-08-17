@@ -33,6 +33,12 @@ const SPECIALIST_CARDS = [
     desc: 'Monitors stock levels and proposes reorder points and quantities. Never issues a PO directly — proposals only.',
     gate: 'Threshold-based — can auto-clear',
   },
+  {
+    tab: 'contract_renewal', agentId: 'procureops-contract-renewal',
+    title: 'Contract Renewal',
+    desc: 'Checks a proposed renewal against company-configured, code-evaluated thresholds — small tail-spend renewals clear on their own, everything else goes to a human.',
+    gate: 'Bounded autonomy — can auto-clear',
+  },
 ]
 
 const SECONDARY_LINKS = [
@@ -41,6 +47,7 @@ const SECONDARY_LINKS = [
   { to: '/vendors', label: 'Vendors', desc: 'The Approved Vendor Master' },
   { to: '/policy', label: 'Policy', desc: 'Active Procurement Policy Manual + DOA Matrix' },
   { to: '/audit', label: 'Audit Log', desc: 'INSERT-only record of every governance event' },
+  { to: '/autonomy-policy', label: 'Autonomy Config', desc: 'The thresholds that let a renewal auto-clear' },
 ]
 
 export default function HomePage() {

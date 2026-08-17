@@ -94,6 +94,38 @@ def seed_negotiation_history(conn: sqlite3.Connection) -> int:
     return len(records)
 
 
+
+# Default bounded-autonomy bands per category -- deliberately "tail spend"
+# sized, well below what a Department Head would need to approve under the
+# DOA matrix (see backend/data/policy/doa_matrix.md). A company tunes these
+# via PUT /api/autonomy-policy/{category}; every change is audited.
+_DEFAULT_AUTONOMY_POLICY = {
+    "IT Hardware & Software":            {"max_renewal_value_usd": 15000, "min_vendor_on_time_pct": 95, "max_vendor_defect_rate_pct": 1.0, "max_price_increase_pct": 3},
+    "Office Supplies & Equipment":       {"max_renewal_value_usd": 10000, "min_vendor_on_time_pct": 95, "max_vendor_defect_rate_pct": 1.0, "max_price_increase_pct": 5},
+    "Professional Services":             {"max_renewal_value_usd": 20000, "min_vendor_on_time_pct": 90, "max_vendor_defect_rate_pct": 100, "max_price_increase_pct": 4},
+    "Raw Materials / Production Inputs": {"max_renewal_value_usd": 25000, "min_vendor_on_time_pct": 93, "max_vendor_defect_rate_pct": 1.5, "max_price_increase_pct": 4},
+    "Facilities & Maintenance":          {"max_renewal_value_usd": 15000, "min_vendor_on_time_pct": 93, "max_vendor_defect_rate_pct": 100, "max_price_increase_pct": 5},
+    "Logistics & Freight":               {"max_renewal_value_usd": 15000, "min_vendor_on_time_pct": 94, "max_vendor_defect_rate_pct": 1.0, "max_price_increase_pct": 4},
+}
+
+
+def seed_autonomy_policy(conn: sqlite3.Connection) -> int:
+    existing = conn.execute("SELECT COUNT(*) FROM autonomy_policy").fetchone()[0]
+    if existing > 0:
+        return 0
+
+    now = _now()
+    for category, bands in _DEFAULT_AUTONOMY_POLICY.items():
+        conn.execute(
+            "INSERT INTO autonomy_policy (category, max_renewal_value_usd, min_vendor_on_time_pct, "
+            "max_vendor_defect_rate_pct, max_price_increase_pct, updated_by, updated_at) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (category, bands["max_renewal_value_usd"], bands["min_vendor_on_time_pct"],
+             bands["max_vendor_defect_rate_pct"], bands["max_price_increase_pct"], SEEDED_BY, now),
+        )
+    return len(_DEFAULT_AUTONOMY_POLICY)
+
+
 def seed_demo_data() -> None:
     conn = _connect()
     try:
@@ -101,9 +133,10 @@ def seed_demo_data() -> None:
             vendor_count = seed_vendors(conn)
             policy_count = seed_policy_versions(conn)
             negotiation_count = seed_negotiation_history(conn)
-        if vendor_count or policy_count or negotiation_count:
+            autonomy_count = seed_autonomy_policy(conn)
+        if vendor_count or policy_count or negotiation_count or autonomy_count:
             print(f"[seed] Loaded {vendor_count} vendors, {policy_count} policy_versions rows, "
-                  f"{negotiation_count} negotiation_history rows.")
+                  f"{negotiation_count} negotiation_history rows, {autonomy_count} autonomy_policy rows.")
         else:
             print("[seed] Data already present — skipping.")
     finally:

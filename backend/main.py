@@ -17,6 +17,7 @@ from seed.demo_seed import seed_demo_data
 from routes.decisions import router as decisions_router
 from routes.policy import router as policy_router
 from routes.negotiation import router as negotiation_router
+from routes.autonomy import router as autonomy_router
 
 try:
     from agents.router import route as route_request
@@ -75,6 +76,7 @@ app.add_middleware(
 app.include_router(decisions_router, prefix="/api", tags=["Decisions"])
 app.include_router(policy_router, prefix="/api", tags=["Policy"])
 app.include_router(negotiation_router, prefix="/api", tags=["Negotiation"])
+app.include_router(autonomy_router, prefix="/api", tags=["Autonomy"])
 
 
 @app.post("/api/route", tags=["Router"])
@@ -150,6 +152,7 @@ _HIGH_SEVERITY_REASON_CODES = {
 }
 _MEDIUM_SEVERITY_REASON_CODES = {
     "EXCEEDS_DOA_THRESHOLD", "PRICE_MISMATCH", "QTY_MISMATCH", "VENDOR_CERT_EXPIRED",
+    "EXCEEDS_AUTO_APPROVAL_BAND",
 }
 _SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client.js'
+import { CATEGORIES } from '../constants.js'
 
 /**
  * Threshold row — a single split-fill bar showing where a configured number
@@ -48,6 +49,11 @@ function ThresholdRow({ label, description, value, onChange, unit, scaleMax, dir
   )
 }
 
+const DEFAULT_NEW_BAND = {
+  max_renewal_value_usd: 10000, min_vendor_on_time_pct: 90,
+  max_vendor_defect_rate_pct: 2, max_price_increase_pct: 5,
+}
+
 const METRICS = [
   {
     key: 'max_renewal_value_usd', label: 'Max renewal value', unit: 'USD', scaleMax: 50000, direction: 'max', step: 500,
@@ -74,9 +80,35 @@ export default function AutonomyPolicyPage() {
   const [savingCategory, setSavingCategory] = useState(null)
   const [savedCategory, setSavedCategory] = useState(null)
   const [error, setError] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [newCategory, setNewCategory] = useState('')
+  const [newBand, setNewBand] = useState(DEFAULT_NEW_BAND)
+  const [creating, setCreating] = useState(false)
 
   const load = () => api.listAutonomyPolicy().then(setPolicies).catch((e) => setError(e.message))
   useEffect(() => { load() }, [])
+
+  const availableCategories = CATEGORIES.filter((c) => !policies.some((p) => p.category === c))
+
+  const startAdding = () => {
+    setNewCategory(availableCategories[0] || '')
+    setNewBand(DEFAULT_NEW_BAND)
+    setAdding(true)
+  }
+
+  const create = async () => {
+    setError(null)
+    setCreating(true)
+    try {
+      await api.createAutonomyPolicy({ category: newCategory, ...newBand, updated_by: updatedBy })
+      setAdding(false)
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const valueFor = (p, key) => edits[p.category]?.[key] ?? p[key]
 
@@ -112,7 +144,17 @@ export default function AutonomyPolicyPage() {
 
   return (
     <div>
-      <h1 className="text-3xl mb-1">Autonomy Config</h1>
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <h1 className="text-3xl">Autonomy Config</h1>
+        {!adding && availableCategories.length > 0 && (
+          <button
+            onClick={startAdding}
+            className="font-mono text-xs uppercase tracking-wider border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors flex-shrink-0"
+          >
+            + Add category
+          </button>
+        )}
+      </div>
       <p className="text-ink-muted text-sm mb-6 max-w-3xl">
         These bands are the only thing that lets a Contract Renewal clear itself — see that specialist
         under <span className="font-mono">Simulate Request</span>. Every renewal is checked against all
@@ -135,6 +177,50 @@ export default function AutonomyPolicyPage() {
       </div>
 
       {error && <p className="text-accent text-sm mb-4 font-mono">{error}</p>}
+
+      {adding && (
+        <section className="border border-ink p-5 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="bg-paper border border-rule px-2 py-1.5 font-serif text-lg text-ink focus:border-ink outline-none"
+            >
+              {availableCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          {METRICS.map((m) => (
+            <ThresholdRow
+              key={m.key}
+              label={m.label}
+              description={m.description}
+              value={newBand[m.key]}
+              onChange={(v) => setNewBand((b) => ({ ...b, [m.key]: v }))}
+              unit={m.unit}
+              scaleMax={m.scaleMax}
+              direction={m.direction}
+              step={m.step}
+            />
+          ))}
+
+          <div className="flex gap-3 mt-4 pt-3 border-t border-rule">
+            <button
+              onClick={create}
+              disabled={creating || !newCategory || !updatedBy.trim()}
+              className="font-mono text-xs uppercase tracking-wider border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {creating ? 'Creating...' : 'Create band'}
+            </button>
+            <button
+              onClick={() => setAdding(false)}
+              className="font-mono text-xs uppercase tracking-wider text-ink-muted hover:text-ink px-3 py-1.5"
+            >
+              Cancel
+            </button>
+          </div>
+        </section>
+      )}
 
       {policies.map((p) => (
         <section key={p.category} className="border border-rule p-5 mb-4">

@@ -18,6 +18,7 @@ from routes.decisions import router as decisions_router
 from routes.policy import router as policy_router
 from routes.negotiation import router as negotiation_router
 from routes.autonomy import router as autonomy_router
+from routes.vendors import router as vendors_router
 
 try:
     from agents.router import route as route_request
@@ -77,6 +78,7 @@ app.include_router(decisions_router, prefix="/api", tags=["Decisions"])
 app.include_router(policy_router, prefix="/api", tags=["Policy"])
 app.include_router(negotiation_router, prefix="/api", tags=["Negotiation"])
 app.include_router(autonomy_router, prefix="/api", tags=["Autonomy"])
+app.include_router(vendors_router, prefix="/api", tags=["Vendors"])
 
 
 @app.post("/api/route", tags=["Router"])
@@ -98,17 +100,6 @@ def extract_fields(body: dict):
     if task_type == "inventory":
         return {"fields": extract_inventory_fields(raw_text)}
     return {"fields": {}}
-
-
-@app.get("/api/vendors", tags=["Vendors"])
-def list_vendors():
-    conn = sqlite3.connect(_DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        rows = conn.execute("SELECT * FROM vendors ORDER BY vendor_id").fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
 
 
 @app.get("/api/audit", tags=["Audit"])

@@ -52,6 +52,7 @@ export const api = {
     request('/decisions/contract-renewal', { method: 'POST', body: JSON.stringify(body) }),
 
   listVendors: () => request('/vendors'),
+  createVendor: (body) => request('/vendors', { method: 'POST', body: JSON.stringify(body) }),
   getAudit: (limit = 50) => request(`/audit?limit=${limit}`),
   getPolicyCurrent: () => request('/policy/current'),
   getPolicyVersions: (docType) => request(`/policy/versions/${docType}`),
@@ -59,6 +60,7 @@ export const api = {
   getNotifications: () => request('/notifications'),
 
   listAutonomyPolicy: () => request('/autonomy-policy'),
+  createAutonomyPolicy: (body) => request('/autonomy-policy', { method: 'POST', body: JSON.stringify(body) }),
   updateAutonomyPolicy: (category, body) =>
     request(`/autonomy-policy/${encodeURIComponent(category)}`, { method: 'PUT', body: JSON.stringify(body) }),
 }

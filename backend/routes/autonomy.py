@@ -1,8 +1,9 @@
 """
 routes/autonomy.py — Bounded-autonomy threshold configuration.
 
-GET /autonomy-policy              every category's current auto-approval bands
-PUT /autonomy-policy/{category}   update one category's bands
+GET  /autonomy-policy              every category's current auto-approval bands
+POST /autonomy-policy              add a band for a category that doesn't have one yet
+PUT  /autonomy-policy/{category}   update one category's existing bands
 
 These are the exact numbers agents/autonomy_rules.py evaluates against to
 decide whether a contract renewal auto-clears — see that module's docstring.
@@ -51,6 +52,21 @@ class AutonomyPolicyUpdate(BaseModel):
     updated_by: str
 
 
+class AutonomyPolicyCreate(AutonomyPolicyUpdate):
+    category: str
+
+
+def _validate_bands(body: AutonomyPolicyUpdate) -> None:
+    if body.max_renewal_value_usd <= 0:
+        raise HTTPException(422, "max_renewal_value_usd must be positive")
+    if not (0 <= body.min_vendor_on_time_pct <= 100):
+        raise HTTPException(422, "min_vendor_on_time_pct must be between 0 and 100")
+    if not (0 <= body.max_vendor_defect_rate_pct <= 100):
+        raise HTTPException(422, "max_vendor_defect_rate_pct must be between 0 and 100")
+    if body.max_price_increase_pct < 0:
+        raise HTTPException(422, "max_price_increase_pct cannot be negative")
+
+
 @router.get("/autonomy-policy")
 def list_autonomy_policy():
     conn = _connect()
@@ -73,16 +89,43 @@ def get_autonomy_policy_for_category(category: str):
         conn.close()
 
 
+@router.post("/autonomy-policy", status_code=201)
+def create_autonomy_policy(body: AutonomyPolicyCreate):
+    if not body.category.strip():
+        raise HTTPException(422, "category is required")
+    _validate_bands(body)
+
+    conn = _connect()
+    try:
+        existing = conn.execute("SELECT 1 FROM autonomy_policy WHERE category=?", (body.category,)).fetchone()
+        if existing:
+            raise HTTPException(409, f"'{body.category}' already has an autonomy policy — use PUT to update it.")
+
+        now = _now()
+        with conn:
+            conn.execute(
+                "INSERT INTO autonomy_policy (category, max_renewal_value_usd, min_vendor_on_time_pct, "
+                "max_vendor_defect_rate_pct, max_price_increase_pct, updated_by, updated_at) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (body.category, body.max_renewal_value_usd, body.min_vendor_on_time_pct,
+                 body.max_vendor_defect_rate_pct, body.max_price_increase_pct, body.updated_by, now),
+            )
+        write_audit(
+            actor=body.updated_by, action="AUTONOMY_POLICY_CREATED",
+            payload={"category": body.category, "max_renewal_value_usd": body.max_renewal_value_usd,
+                     "min_vendor_on_time_pct": body.min_vendor_on_time_pct,
+                     "max_vendor_defect_rate_pct": body.max_vendor_defect_rate_pct,
+                     "max_price_increase_pct": body.max_price_increase_pct},
+        )
+        row = conn.execute("SELECT * FROM autonomy_policy WHERE category=?", (body.category,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
 @router.put("/autonomy-policy/{category}")
 def update_autonomy_policy(category: str, body: AutonomyPolicyUpdate):
-    if body.max_renewal_value_usd <= 0:
-        raise HTTPException(422, "max_renewal_value_usd must be positive")
-    if not (0 <= body.min_vendor_on_time_pct <= 100):
-        raise HTTPException(422, "min_vendor_on_time_pct must be between 0 and 100")
-    if not (0 <= body.max_vendor_defect_rate_pct <= 100):
-        raise HTTPException(422, "max_vendor_defect_rate_pct must be between 0 and 100")
-    if body.max_price_increase_pct < 0:
-        raise HTTPException(422, "max_price_increase_pct cannot be negative")
+    _validate_bands(body)
 
     conn = _connect()
     try:

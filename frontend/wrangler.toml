@@ -1,10 +1,17 @@
 name = "procureops"
 compatibility_date = "2026-06-01"
 
+# workers_dev stays enabled so the original workers.dev URL (already
+# referenced in README/portfolio links elsewhere) keeps working alongside
+# the custom domain below.
+workers_dev = true
+
 [assets]
 directory = "./dist"
 not_found_handling = "single-page-application"
 
-# Custom domain (procureops.krishnaparuchuri.com) is bound via the Cloudflare
-# dashboard/DNS, not here — see docs/ARCHITECTURE.md deployment notes.
-# Not yet created; confirm with Krishna before adding the DNS record.
+# Custom domain — wrangler provisions the DNS record + SSL cert automatically
+# on deploy since krishnaparuchuri.com is on the same Cloudflare account.
+[[routes]]
+pattern = "procureops.krishnaparuchuri.com"
+custom_domain = true

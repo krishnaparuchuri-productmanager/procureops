@@ -1,6 +1,6 @@
 # ProcureOps
 
-**Live demo:** [procureops.krishna1parchuri.workers.dev](https://procureops.krishna1parchuri.workers.dev/)
+**Live demo:** [procureops.krishnaparuchuri.com](https://procureops.krishnaparuchuri.com/)
 **Repo:** this one — backend and frontend live side by side, deploy together
 
 An AI Router + **6 specialists** governing a procurement workflow end to end —
@@ -153,8 +153,12 @@ files from the Docker build context, so production always seeds fresh from
 `seed/demo_seed.py` rather than shipping whatever local test data happened
 to be on disk at build time.
 
-The custom domain `procureops.krishnaparuchuri.com` is not yet created —
-the live demo above is the Cloudflare Workers URL directly.
+The custom domain `procureops.krishnaparuchuri.com` is live, provisioned via
+`frontend/wrangler.toml`'s `[[routes]]` entry (`custom_domain = true`) —
+wrangler creates the DNS record and SSL cert automatically on deploy since
+the zone is on the same Cloudflare account. The original
+`procureops.krishna1parchuri.workers.dev` URL stays enabled alongside it
+(`workers_dev = true`).
 
 ## Folder Structure
 
@@ -194,7 +198,7 @@ procureops/
 
 ## Links
 
-- Live demo: [procureops.krishna1parchuri.workers.dev](https://procureops.krishna1parchuri.workers.dev/)
+- Live demo: [procureops.krishnaparuchuri.com](https://procureops.krishnaparuchuri.com/)
 - Portfolio: [krishnaparuchuri.com](https://krishnaparuchuri.com/)
 - GitHub: [krishnaparuchuri-productmanager/procureops](https://github.com/krishnaparuchuri-productmanager/procureops)
 
